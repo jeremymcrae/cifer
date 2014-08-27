@@ -11,13 +11,25 @@ library(reshape)
 library(ggplot2)
 library(Cairo)
 
-EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/"
-POSITIVE_CONTROL_CNV_PATH = file.path(EXOME_DIR, "data/control_CNVs_inheritance_jeremy.txt")
+EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance"
+DATA_DIR = file.path(EXOME_DIR, "data")
+RESULTS_DIR = file.path(EXOME_DIR, "results")
+POSITIVE_CONTROL_CNV_PATH = file.path(DATA_DIR, "control_CNVs_inheritance_jeremy.txt")
 
 open_inheritance_calls <- function(folder) {
     # open the inheritance calls predicted from the exome data
     # 
+    # We might start off with the exome-based CNV cals split across multiple 
+    # files. This function loads all the separate files (if necessary), and
+    # generates a file with all the CNV calls from the separate files in it, so
+    # that we can load that single file later.
     # 
+    # Args:
+    #     folder: folder containing files with the exome inheritance calls
+    # 
+    # Returns:
+    #     dataframe containing CNV inheritance calls from the exome-based 
+    #     classifier
     
     # if we have already merged the files together, don't worry about doing this
     # again
@@ -42,13 +54,18 @@ open_inheritance_calls <- function(folder) {
 }
 
 open_vicar_calls <- function(path) {
-    # open the inheritance calls predicted from the array data
+    # open the inheritance calls predicted from the array data.
     # 
+    # Args:
+    #     path: path to the VICAR classification data file
+    # 
+    # Returns:
+    #     dataframe containing VICAR CNVs
     
     cnvs = read.table(path, stringsAsFactors = FALSE, header = TRUE)
     cnvs$chr = as.character(cnvs$chr)
     
-    # trim unneeded columns
+    # trim some unnessary columns
     cnvs$proband_file_path = NULL
     cnvs$father_file_path = NULL
     cnvs$mother_file_path = NULL
@@ -62,11 +79,19 @@ open_vicar_calls <- function(path) {
 combine_cnv_calls <- function(exome_calls, array_calls) {
     # combines the VICAR and exome-based inheritance calls
     # 
+    # Args:
+    #     exome_calls: CNVs, with inheritance predictions from the exome 
+    #         inheritance classifier
+    #     array_calls: CNVs with inheritance predictions from VICAR
+    # 
+    # Returns:
+    #     a dataframe where the VICAR and exome predictions are merged, and the
+    #     prediction names are standardised between classifiers
     
     cnvs = merge(exome_calls, array_calls, by = c("chr", "chr_start", 
         "chr_end", "proband_stable_id", "inherit_type"))
     
-    # trim to CNVs that have matching exome data
+    # exclude CNVs without matching exome data
     cnvs = cnvs[cnvs$predicted_inheritance != "proband_not_in_datafreeze", ]
     cnvs = cnvs[cnvs$predicted_inheritance != "no_probe_data_for_CNV_region", ]
     cnvs = cnvs[cnvs$predicted_inheritance != "unable_to_evaluate_probes", ]
@@ -88,15 +113,33 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
 }
 
 get_certain_cnvs <- function(cnvs) {
+    # restrict ourselves to the set of CNVs with VICAR calls that are certain,
+    # ie drop all of the "insufficient", "inconclusive" etc calls
     # 
-    uncertain_vicar_calls = c("inconclusive", "noCNVfound", "inconclusiveDuo", "insufficient", "noCNVDuo", "noCNVfoundProband", "noCNVprobandDuo")
+    # Args:
+    #     cnvs: dataframe of CNVs
+    # 
+    # Returns:
+    #     dataframe of CNVs, restrcicted to ones with certain calls
+    
+    uncertain_vicar_calls = c("inconclusive", "noCNVfound", "inconclusiveDuo", 
+        "insufficient", "noCNVDuo", "noCNVfoundProband", "noCNVprobandDuo")
     certain_cnvs = cnvs[!(cnvs$inherit_type %in% uncertain_vicar_calls), ]
     
     return(certain_cnvs)
 }
 
 bin_cnvs <- function(cnvs, column, title) {
-    # check how the number of probes affects the ability to get a matching inheritance state
+    # check how different metrics impact matching the inheritance state
+    # 
+    # Args:
+    #     cnvs: dataframe of CNVs
+    #     column: column from CNVs data frame, to be used to bin the CNVs
+    #     title: string for the title of the plot
+    # 
+    # Returns:
+    #    a qplot, to be include in a multi-plot later on
+    
     probs = seq(0.0, 1, 0.2)
     breaks = quantile(column, probs, names=FALSE)
     quantile = try(cut(column, breaks, include.lowest=TRUE), silent = TRUE)
@@ -111,8 +154,11 @@ bin_cnvs <- function(cnvs, column, title) {
     cnvs$quantile = quantile
     ratios = cast(cnvs, inheritance + quantile ~ consistent, value = "proband_stable_id", length)
     
+    # cacluate how many calls are correct at each qwuantile, for the different 
+    # call types
     ratios$match_ratio = ratios[["TRUE"]]/(ratios[["TRUE"]] + ratios[["FALSE"]])
     
+    # plot the ratio of correct calls by quantile, for the different call types
     plot = qplot(quantile, match_ratio, data = ratios) 
     plot = plot + aes(color = inheritance, group = inheritance) 
     plot = plot + geom_line() + theme_bw() + ggtitle(title)
@@ -135,6 +181,12 @@ vp.layout <- function(x, y){
 analyse_performance <- function(cnvs, pdf_filename) {
     # analyse how well the exome predictions match the VICAR predictions
     # 
+    # Args:
+    #     cnvs: dataframe of CNVs with exome-based and VIAR inheritance states
+    #     pdf_filename: filename to export plots into
+    # 
+    # Returns:
+    #     nothing
     
     # tabulate the differences between VICAR and exome calls
     print(cast(cnvs, inheritance ~ consistent, value = "proband_stable_id", length))
@@ -153,20 +205,23 @@ analyse_performance <- function(cnvs, pdf_filename) {
 
 main <- function() {
     vicar_calls = open_vicar_calls(POSITIVE_CONTROL_CNV_PATH)
-    exome_calls = open_inheritance_calls(EXOME_DIR)
+    exome_calls = open_inheritance_calls(RESULTS_DIR)
     
+    # combine the CNV calls, and export the file, so we can analyse them later
     cnvs = combine_cnv_calls(exome_calls, vicar_calls)
+    write.table(cnvs, file = file.path(EXOME_DIR, "control_CNVs_VICAR_and_exome.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
     
+    # get different CNV subsets
     certain_cnvs = get_certain_cnvs(cnvs)
-    analyse_performance(cnvs, "all_cnvs.pdf")
-    analyse_performance(certain_cnvs, "cnvs_with_certain_vicar_classifications.pdf")
-    
     rare_cnvs = cnvs[cnvs$rare == 1, ]
     common_cnvs = cnvs[cnvs$rare == 0, ]
     
+    # analyse how well the inheritance states match between the VICAR calls, and
+    # the exome-based calls
+    analyse_performance(cnvs, "all_cnvs.pdf")
+    analyse_performance(certain_cnvs, "cnvs_with_certain_vicar_classifications.pdf")
     analyse_performance(rare_cnvs, "rare_cnvs.pdf")
     analyse_performance(common_cnvs, "common_cnvs.pdf")
-    
     
 }
 
