@@ -65,13 +65,13 @@ open_vicar_calls <- function(path) {
     cnvs = read.table(path, stringsAsFactors = FALSE, header = TRUE)
     cnvs$chr = as.character(cnvs$chr)
     
-    # trim some unnessary columns
-    cnvs$proband_file_path = NULL
-    cnvs$father_file_path = NULL
-    cnvs$mother_file_path = NULL
-    cnvs$father_stable_id = NULL
-    cnvs$mother_stable_id = NULL
-    cnvs$proband_sanger_id = NULL
+    # # trim some unnessary columns
+    # cnvs$proband_file_path = NULL
+    # cnvs$father_file_path = NULL
+    # cnvs$mother_file_path = NULL
+    # cnvs$father_stable_id = NULL
+    # cnvs$mother_stable_id = NULL
+    # cnvs$proband_sanger_id = NULL
     
     return(cnvs)
 }
@@ -88,7 +88,7 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     #     a dataframe where the VICAR and exome predictions are merged, and the
     #     prediction names are standardised between classifiers
     
-    cnvs = merge(exome_calls, array_calls, by = c("chr", "chr_start", 
+    cnvs = merge(array_calls, exome_calls, by = c("chr", "chr_start", 
         "chr_end", "proband_stable_id", "inherit_type"))
     
     # exclude CNVs without matching exome data
@@ -104,10 +104,14 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     cnvs$inheritance[cnvs$predicted_inheritance == "biparental_inh"] = "biparental"
     cnvs$inheritance[cnvs$predicted_inheritance == "uncertain"] = "uncertain"
     
+    # and reorganise the column names
+    cnvs$predicted_inheritance = cnvs$inheritance
+    cnvs$inheritance = NULL
+    
     # I assume inheritedDuo means the same thing as biparental. Why the difference?
     cnvs$inherit_type[cnvs$inherit_type == "inheritedDuo"] = "biparental"
     
-    cnvs$consistent = as.character(cnvs$inherit_type) == as.character(cnvs$inheritance)
+    cnvs$consistent = as.character(cnvs$inherit_type) == as.character(cnvs$predicted_inheritance)
     
     return(cnvs)
 }
@@ -152,7 +156,7 @@ bin_cnvs <- function(cnvs, column, title) {
     }
     
     cnvs$quantile = quantile
-    ratios = cast(cnvs, inheritance + quantile ~ consistent, value = "proband_stable_id", length)
+    ratios = cast(cnvs, predicted_inheritance + quantile ~ consistent, value = "proband_stable_id", length)
     
     # cacluate how many calls are correct at each qwuantile, for the different 
     # call types
@@ -160,7 +164,7 @@ bin_cnvs <- function(cnvs, column, title) {
     
     # plot the ratio of correct calls by quantile, for the different call types
     plot = qplot(quantile, match_ratio, data = ratios) 
-    plot = plot + aes(color = inheritance, group = inheritance) 
+    plot = plot + aes(color = predicted_inheritance, group = predicted_inheritance) 
     plot = plot + geom_line() + theme_bw() + ggtitle(title)
     
     return(plot)
@@ -189,8 +193,8 @@ analyse_performance <- function(cnvs, pdf_filename) {
     #     nothing
     
     # tabulate the differences between VICAR and exome calls
-    print(cast(cnvs, inheritance ~ consistent, value = "proband_stable_id", length))
-    print(cast(cnvs, inheritance ~ inherit_type, value = "proband_stable_id", length))
+    print(cast(cnvs, predicted_inheritance ~ consistent, value = "proband_stable_id", length))
+    print(cast(cnvs, predicted_inheritance ~ inherit_type, value = "proband_stable_id", length))
     
     # plot the ratio of correct matches across quantiles of different CNV scores
     Cairo(file = file.path(EXOME_DIR, pdf_filename), type = "pdf", height = 25, 
