@@ -1,3 +1,5 @@
+""" splits a file into many separate files, all with the same header
+"""
 
 import os
 import argparse

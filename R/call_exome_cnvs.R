@@ -122,7 +122,8 @@ predict_inheritance <- function(z_scores, maternal_z_score, paternal_z_score) {
             return(list(inheritance = "unable_to_evaluate_probes", mom_value = NA, dad_value = NA))
         }
         
-        # use the model closest to 0 as the null distribution
+        # use the model closest to 0 as the null distribution, or could use the
+        # model with the highest peak
         null_pos = which.min(abs(l2r_model$mu))
         null_mean = l2r_model$mu[null_pos]
         null_sd = l2r_model$sigma[null_pos]
