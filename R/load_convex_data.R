@@ -6,6 +6,7 @@ TEMP_DIR = "/lustre/scratch113/projects/ddd/users/jm33/aggregated_convex"
 #' find the convex data files for each DDD individual
 #' 
 #' @param ddd data frame of participant informatyion, including sample IDs
+#' @export
 #' @return dataframe with additional column of file paths
 find_convex_files <- function(ddd) {
     
@@ -42,6 +43,7 @@ find_convex_files <- function(ddd) {
 #' convert a chrom string to a number (make sex chroms 23 and beyond)
 #' 
 #' @param chrom chromosome ID as string eg  "1", "2" ... "X"
+#' @export
 #' @return chromosome as number, where X and Y are 23 and 24
 chrom_num <- function(chrom) {
     
@@ -70,7 +72,7 @@ chrom_num <- function(chrom) {
 #'     the file
 #' @param chrom chrom that we are searching for
 #' @param start start position of the CNV
-#' 
+#' @export
 #' @return the approximate byte offset in the file (to within a few hundred
 #'    bytes) where the required data starts
 find_file_pos <- function(path, start_pos, chrom, start, file_size) {
@@ -130,7 +132,7 @@ find_file_pos <- function(path, start_pos, chrom, start, file_size) {
 #' @param file_pos position in the file to jump ahead to
 #' @param lines_n number of lines to read in
 #' @param header vector of header strings
-#' 
+#' @export
 #' @return dataframe of probe information, with one row per probe
 extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, filesize) {
     
@@ -158,7 +160,7 @@ extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, files
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
 #' @param start chromosome position that the CNV region starts at
 #' @param stop chromosome position that the CNV region ends at
-#' 
+#' @export
 #' @return a dataframe containing all the data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
 open_probes_data_fast <- function(ddd, chrom, start, stop) {
@@ -211,7 +213,7 @@ open_probes_data_fast <- function(ddd, chrom, start, stop) {
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
 #' @param start chromosome position that the CNV region starts at
 #' @param stop chromosome position that the CNV region ends at
-#' 
+#' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
 open_probes_data_slow <- function(ddd, chrom, start, stop) {
@@ -271,7 +273,7 @@ open_probes_data_slow <- function(ddd, chrom, start, stop) {
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
 #' @param start chromosome position that the CNV region starts at
 #' @param stop chromosome position that the CNV region ends at
-#' 
+#' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
 get_probes_data <- function(ddd, chrom, start, stop) {    

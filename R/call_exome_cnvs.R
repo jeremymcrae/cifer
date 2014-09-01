@@ -14,7 +14,7 @@ DATAFREEZE_DIR = "/nfs/ddd0/Data/datafreeze/1133trios_20131218"
 #' @param cnv one row dataframe that contains the details of the CNV. Optional,
 #'     only used if we need to plot the CNV, when we need to note any
 #'     existing inheritance classification.
-#' 
+#' @export
 #' @return inheritance classification as a string eg "paternal_inh", "de_novo" etc
 classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, start, stop, cnv=NA) {
     
@@ -34,7 +34,8 @@ classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, star
 #' 
 #' @param samples_dir path to datafreeze directory containing files with family
 #'     relationships and sanger IDs
-# @return dataframe with sample information, including sanger IDs
+#' @export
+#' @return dataframe with sample information, including sanger IDs
 get_ddd_individuals <- function(samples_dir) {
     
     families_path = file.path(samples_dir, "family_relationships.shared.txt")
@@ -56,7 +57,7 @@ get_ddd_individuals <- function(samples_dir) {
 #' @param father l2r values for the father of the current proband
 #' @param proband l2r values for the current proband
 #' @param population_l2r_set l2r values for parents not in proband's family
-#' 
+#' @export
 #' @return list of z scores for population (as vector), and z scores for proband
 #'     family (as list)
 get_l2r_z_scores <- function(mother, father, proband, population_l2r_set) {
@@ -82,7 +83,7 @@ get_l2r_z_scores <- function(mother, father, proband, population_l2r_set) {
 #' 
 #' @param z_scores Z score transformed log2 ratio data for parents unrelated 
 #'     to the proband currently being classified.
-#' 
+#' @export
 #' @return a list containing the null model's mean and standard deviation, or
 #'     raises an error if generating a mixture model and the code has too 
 #'     many retries
@@ -130,7 +131,7 @@ get_null_parameters <-function(z_scores) {
 #' 
 #' @param z_scores list of Z scores of L2R for the parental population, and 
 #'     Z scores for the mother, father and current proband
-#' 
+#' @export
 #' @return list of inheritance classification, and P values for the mother and 
 #'     father, where the values indicate how likely each parents data belongs 
 #'     to the uninherited cluster.
@@ -172,7 +173,7 @@ predict_inheritance <- function(z_scores) {
 #'     the null distribution
 #' @param uncertain_cutoff threshold at which to assign the sample as belonging to
 #'     the null distribution
-#' 
+#' @export
 #' @return string of "reject" if the p-value belongs to the null distribution, 
 #'     "null" if the p-value belongs to the null distribution, and 
 #'     "uncertain" if it is unclear whether the p-value belongs to the null 
@@ -192,7 +193,7 @@ categorize_p_value <- function(p_value, null_cutoff=0.005, uncertain_cutoff=0.00
 #' @param mom_p_value p-value for mom's scores belonging to the null model
 #' @param dad_p_value p-value for dad's scores belonging to the null model
 #' @param proband_p_value p-value for proband's scores belonging to the null model
-#' 
+#' @export
 #' @return inheritance classification for the CNV eg("de_novo", "uncertain", 
 #'     "paternal_inh" etc)
 classify_inheritance <- function(mom_p_value, dad_p_value, proband_p_value) {
@@ -233,7 +234,7 @@ classify_inheritance <- function(mom_p_value, dad_p_value, proband_p_value) {
 #' @param maternal_id DDD ID for the proband's mother
 #' @param paternal_id DDD ID for the proband's father
 #' @param cnv row information for CNV
-#' 
+#' @export
 #' @return list of inheritance classification, the mother's p-value and the 
 #'     father's p-value.
 process_cnv_call <- function(ddd, probes, proband_id, maternal_id, paternal_id, cnv=NA) {

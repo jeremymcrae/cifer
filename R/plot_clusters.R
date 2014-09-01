@@ -5,7 +5,7 @@
 #' @param proband L2R values for proband (or NULL if not available)
 #' @param mother L2R values for mother (or NULL if not available)
 #' @param father L2R values for father (or NULL if not available)
-#' 
+#' @export
 #' @return list of correlations for mother and father's L2R scores with probands
 #'     L2R values, or NA where L2R values are unavailable.
 get_parental_correlations <- function(proband, mother, father) {
@@ -29,7 +29,7 @@ get_parental_correlations <- function(proband, mother, father) {
 #' @param probes L2R or ADM3 scores for all individuals for probes within the CNV
 #' @param parent_ids vector of parental IDs, except for the trio under
 #'     investigation, sorted as for the vector of parental Z scores. 
-#' 
+#' @export
 #' @return numeric vector of correlation scores, (with sample IDs as names), 
 #'     sorted according to the parent_ids vector.
 get_population_correlation <- function(ddd, probes, parent_ids) {
@@ -67,6 +67,7 @@ get_population_correlation <- function(ddd, probes, parent_ids) {
 #' @param paternal_id DDD ID of the proband's father
 #' @param cnv one row dataframe that contains the CNV's details (used to 
 #'         identify the plot)
+#' @export
 include_graphs <- function(ddd, probes, z_scores, proband_id, maternal_id, paternal_id, cnv) {
     
     # ignore samples we cannot we get correlations from 
@@ -103,6 +104,7 @@ include_graphs <- function(ddd, probes, z_scores, proband_id, maternal_id, pater
 #' @param row row of data frame for CNV containing the proband ID, chrom, 
 #'      start, stop, manually reviewed call, which we use in the title of 
 #'      the plot.
+#' @export
 plot_cluster <- function(z_scores, correlations, trio_corr, cnv) {
     
     # combine the parental and population Z scores and correlations, so that we 
