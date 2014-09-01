@@ -33,11 +33,9 @@ def get_options():
     
     args = parser.parse_args()
     
-    columns = {"adm3": 7, "lr2": 3}
-    column_num = columns[args.l2r_type]
     
     return args.chrom, args.outdir, args.all_chroms, args.datafreeze_dir, \
-        args.l2r_dir, column_num
+        args.l2r_dir, args.l2r_type
 
 def get_sanger_ids(datafreeze_dir):
     """get a list of DDD participants, with their family relationships, and
@@ -119,7 +117,7 @@ def get_l2r_paths(l2r_dir, sanger_ids):
     
     return file_names
 
-def write_index(table, outdir, chrom):
+def write_index(table, outdir, chrom, l2r_type):
     """ make a file from the generated table that we can use in R
     
     Args:
@@ -133,7 +131,7 @@ def write_index(table, outdir, chrom):
     
     header = "chrom\tstart\tstop\n"
     
-    basename = "adm3_index.chr" + chrom + ".txt"
+    basename = l2r_type + "_index.chr" + chrom + ".txt"
     output_path = os.path.join(outdir, basename)      
     output = open(output_path, "w")
     output.write(header)
@@ -327,7 +325,7 @@ def write_output(outfile, chrom, table, header):
         
         outfile.write("\t".join(line) + "\n")
 
-def build_l2r_table_for_chrom(regions, l2r_paths, output_dir, column_num, chrom):
+def build_l2r_table_for_chrom(regions, l2r_paths, output_dir, column_num, chrom, l2r_type):
     """ construct L2R tables that aggregate L2R values from multiple individuals
     
     Rather than loading all lines from files at once, we process the L2R files 
@@ -350,7 +348,7 @@ def build_l2r_table_for_chrom(regions, l2r_paths, output_dir, column_num, chrom)
     header = ["chrom", "start", "stop"] + sorted(l2r_paths)
     step_size = 1000
     
-    basename = "adm3_dataset.chr" + chrom + ".txt"
+    basename = l2r_type + "_dataset.chr" + chrom + ".txt"
     output_path = os.path.join(output_dir, basename)
     
     outfile = open(output_path, "w")
@@ -395,7 +393,10 @@ def build_l2r_table_for_chrom(regions, l2r_paths, output_dir, column_num, chrom)
 
 def main():
     
-    chrom, outdir, all_chroms, datafreeze_dir, l2r_dir, column_num = get_options()
+    chrom, outdir, all_chroms, datafreeze_dir, l2r_dir, l2r_type = get_options()
+    
+    columns = {"adm3": 7, "l2r": 3}
+    column_num = columns[l2r_type]
     
     sanger_ids = get_sanger_ids(datafreeze_dir)
     l2r_paths = get_l2r_paths(l2r_dir, sanger_ids)
@@ -411,11 +412,11 @@ def main():
     if all_chroms:
         for chrom in CHROMS:
             # generate index files to identify lines to load
-            write_index(regions, outdir, chrom)
-            build_l2r_table_for_chrom(regions, l2r_paths, outdir, column_num, chrom)
+            write_index(regions, outdir, chrom, l2r_type)
+            build_l2r_table_for_chrom(regions, l2r_paths, outdir, column_num, chrom, l2r_type)
     else:
-        write_index(regions, outdir, chrom)
-        build_l2r_table_for_chrom(regions, l2r_paths, outdir, column_num, chrom)
+        write_index(regions, outdir, chrom, l2r_type)
+        build_l2r_table_for_chrom(regions, l2r_paths, outdir, column_num, chrom, l2r_type)
 
 if __name__ == '__main__':
     main()
