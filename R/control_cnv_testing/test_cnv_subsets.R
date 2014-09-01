@@ -2,30 +2,22 @@
 # large, probe-rich manually classified CNVs.
 # 
 
-library(reshape)
-library(Cairo)
-
-source("call_exome_cnvs.R")
-source("load_convex_data.R")
-
 REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/data/exome_only_denovo_cnvs.xlsx"
 
+#' test the inheritance classification of subsets of probes in a CNV
+#' 
+#' We subset the probes, in order to check the performance of the classifier
+#' with smaller numbers of probes. Use a sliding window of n probes, where n
+#' varies between 1 and 10.
+#' 
+#' @param cnv_predictions blank data frame to put classifcations into
+#' @param cnvs data frame containing CNV information
+#' @param row_num row of the cnvs dataframe to examine
+#' @param ddd dataframe containing all the DDD sample information.
+#' 
+#' @return data frame containing CNV information (with number of probes), and
+#'     the inheritance classification.
 test_cnv_subset <- function(cnv_predictions, cnvs, row_num, ddd) {
-    # test the inheritance classification of subsets of probes in a CNV
-    # 
-    # We subset the probes, in order to check the performance of the classifier
-    # with smaller numbers of probes. Use a sliding window of n probes, where n
-    # varies between 1 and 10.
-    # 
-    # Args:
-    #     cnv_predictions: blank data frame to put classifcations into
-    #     cnvs: data frame containing CNV information
-    #     row_num: row of the cnvs dataframe to examine
-    #     ddd: dataframe containing all the DDD sample information.
-    # 
-    # Returns:
-    #     data frame containing CNV information (with number of probes), and
-    #     the inheritance classification.
     
     row = cnvs[row_num, ]
         
@@ -63,13 +55,12 @@ test_cnv_subset <- function(cnv_predictions, cnvs, row_num, ddd) {
     return(cnv_predictions)
 }
 
+#' plot the number of correct predictions by number of probes selected, for 
+#' each of the inheritance categories
+#' 
+#' @param cnv_predictions data frame of CNVs, including coordinates, number of
+#'     probes, inheritance classification (manually reviewed and predicted)
 plot_correct_ratios <- function(cnv_predictions) {
-    # plot the number of correct predictions by number of probes selected, for 
-    # each of the inheritance categories
-    # 
-    # Args:
-    #     cnv_predictions: data frame of CNVs, including coordinates, number of
-    #     probes, inheritance classification (manually reviewed and predicted)
     
     # count the number of predictions that were correct, or incorrect, for each
     # inheritance type

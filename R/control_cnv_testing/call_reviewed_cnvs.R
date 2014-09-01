@@ -1,22 +1,15 @@
 # classifies a set of CVNs that have been manually assigned inhertance states,
 # so we can compare the automated predictions vs the manual classifications.
 
-library(gdata)
-
-source("plot_clusters.R")
-source("call_exome_cnvs.R")
-
 PLOT_GRAPHS = TRUE
 REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/data/exome_only_denovo_cnvs.xlsx"
 
+#' open a dataset containing CNV regions by individual, with reviewed calls
+#' 
+#' @param path path to excel file listing manually reviewed CNV inheritances
+#' 
+#' @return dataframe containing CNVs with confident inheritance classifications
 get_reviewed_cnvs <- function(path) {
-    # open a dataset containing CNV regions by individual, with reviewed calls
-    # 
-    # Args:
-    #     path: path to excel file listing manually reviewed CNV inheritances
-    # 
-    # Returns:
-    #     dataframe containing CNVs with confident inheritance classifications
     
     # open the file, and select the columns of interest
     cnvs = read.xls(path, stringsAsFactors = FALSE)

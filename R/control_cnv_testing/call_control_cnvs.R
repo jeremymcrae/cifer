@@ -1,23 +1,17 @@
 # classifies a set of CVNs that have been assigned inhertance states by VICAR,
 # so we can compare the automated predictions vs the VICAR classifications.
 
-source("plot_clusters.R")
-source("call_exome_cnvs.R")
-
 num = commandArgs(trailingOnly = TRUE)
 
 PLOT_GRAPHS = FALSE
 POSITIVE_CONTROL_CNV_PATH = paste("/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/data/control_CNVs_inheritance_jeremy.txt", num, ".txt", sep = "")
 
+#' open a dataset containing CNV regions by individual, with reviewed calls
+#' 
+#' @param path path to excel file listing manually reviewed CNV inheritances
+#' @return dataframe containing CNVs with confident inheritance classifications
 get_cnvs <- function(path) {
-    # open a dataset containing CNV regions by individual, with reviewed calls
-    # 
-    # Args:
-    #     path: path to excel file listing manually reviewed CNV inheritances
-    # 
-    # Returns:
-    #     dataframe containing CNVs with confident inheritance classifications
-    
+   
     # open the file, and select the columns of interest
     cnvs = read.table(path, stringsAsFactors = FALSE, header = TRUE)
     cnvs$chr = as.character(cnvs$chr)

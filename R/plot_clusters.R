@@ -1,18 +1,14 @@
 # functions to plot L2R scores against correlations
 
-library(Cairo)
-
+#' find the correlation in L2R values between a child and their parents
+#' 
+#' @param proband L2R values for proband (or NULL if not available)
+#' @param mother L2R values for mother (or NULL if not available)
+#' @param father L2R values for father (or NULL if not available)
+#' 
+#' @return list of correlations for mother and father's L2R scores with probands
+#'     L2R values, or NA where L2R values are unavailable.
 get_parental_correlations <- function(proband, mother, father) {
-    # find the correlation in L2R values between a child and their parents
-    # 
-    # Args:
-    #     proband: L2R values for proband (or NULL if not available)
-    #     mother: L2R values for mother (or NULL if not available)
-    #     father: L2R values for father (or NULL if not available)
-    # 
-    # Returns:
-    #     list of correlations for mother and father's L2R scores with probands
-    #     L2R values, or NA where L2R values are unavailable.
     
     mom = NA
     dad = NA
@@ -27,18 +23,16 @@ get_parental_correlations <- function(proband, mother, father) {
     return(correlations)
 }
 
+#' get the correlation between each proband and their parents L2R values
+#' 
+#' @param ddd dataframe containing all the DDD sample information.
+#' @param probes L2R or ADM3 scores for all individuals for probes within the CNV
+#' @param parent_ids vector of parental IDs, except for the trio under
+#'     investigation, sorted as for the vector of parental Z scores. 
+#' 
+#' @return numeric vector of correlation scores, (with sample IDs as names), 
+#'     sorted according to the parent_ids vector.
 get_population_correlation <- function(ddd, probes, parent_ids) {
-    # get the correlation between each proband and their parents L2R values
-    # 
-    # Args:
-    #     ddd: dataframe containing all the DDD sample information.
-    #     probes: L2R or ADM3 scores for all individuals for probes within the CNV
-    #     parent_ids: vector of parental IDs, except for the trio under
-    #         ainvestigation, sorted as for the vector of parental Z scores. 
-    # 
-    # Returns:
-    #     numeric vector of correlation scores, (with sample IDs as names), 
-    #     sorted according to the parent_ids vector.
     
     correlations = rep(NA, length(parent_ids))
     names(correlations) = parent_ids
@@ -58,26 +52,22 @@ get_population_correlation <- function(ddd, probes, parent_ids) {
     return(correlations)
 }
 
+#' set up the data for plotting a graph, then call the plotting function
+#' 
+#' Initially we expected that correlations between the proband's scores with
+#' parental scores might be useful, which is why this function calculates the
+#' correlation, before plotting.
+#' 
+#' @param ddd dataframe containing all the DDD sample information.
+#' @param probes L2R or ADM3 scores for all individuals for probes within the CNV
+#' @param z_scores list of Z scores for unrelated parents, and Z scores for 
+#'      members of the current trio
+#' @param proband_id DDD ID of the proband
+#' @param maternal_id DDD ID of the proband's mother
+#' @param paternal_id DDD ID of the proband's father
+#' @param cnv one row dataframe that contains the CNV's details (used to 
+#'         identify the plot)
 include_graphs <- function(ddd, probes, z_scores, proband_id, maternal_id, paternal_id, cnv) {
-    # set up the data for plotting a graph, then call the plotting function
-    # 
-    # Initially we expected that correlations between the proband's scores with
-    # parental scores might be useful, which is why this function calculates the
-    # correlation, before plotting.
-    # 
-    # Args:
-    #     ddd: dataframe containing all the DDD sample information.
-    #     probes: L2R or ADM3 scores for all individuals for probes within the CNV
-    #     z_scores: list of Z scores for unrelated parents, and Z scores for 
-    #         members of the current trio
-    #     proband_id: DDD ID of the proband
-    #     maternal_id: DDD ID of the proband's mother
-    #     paternal_id: DDD ID of the proband's father
-    #     cnv: one row dataframe that contains the CNV's details (used to 
-    #         identify the plot)
-    # 
-    # Returns:
-    #     nothing
     
     # ignore samples we cannot we get correlations from 
     if (nrow(probes) == 1 | length(unique(probes[[proband_id]])) == 1) { return("no plot") }
@@ -102,19 +92,18 @@ include_graphs <- function(ddd, probes, z_scores, proband_id, maternal_id, pater
     plot_cluster(z_scores, correlations, trio_corr, cnv)
 }
 
+#' plot the Z scores and correlations for the population, so that we can also
+#' plot the parental data points, in order to quickly assess how far away
+#' from the normal population that parental data points are.
+#' 
+#' @param z_score: Z scores of L2R for the parental population
+#' @param correlations correlations of parental L2R to child L2R for the 
+#'      parental population
+#' @param trio_corr correlations of mother's L2R to proband's L2R
+#' @param row row of data frame for CNV containing the proband ID, chrom, 
+#'      start, stop, manually reviewed call, which we use in the title of 
+#'      the plot.
 plot_cluster <- function(z_scores, correlations, trio_corr, cnv) {
-    # plot the Z scores and correlations for the population, so that we can also
-    # plot the parental data points, in order to quickly assess how far away
-    # from the normal population that parental data points are.
-    # 
-    # Args:
-    #     z_scores: Z scores of L2R for the parental population
-    #     correlations: correlations of parental L2R to child L2R for the 
-    #         parental population
-    #     trio_corr: correlations of mother's L2R to proband's L2R
-    #     row: row of data frame for CNV containing the proband ID, chrom, 
-    #         start, stop, manually reviewed call, which we use in the title of 
-    #         the plot.
     
     # combine the parental and population Z scores and correlations, so that we 
     # can construct axes that include all data points.

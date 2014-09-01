@@ -1,35 +1,22 @@
 # script to examine the output from predicting CNV inheritance for the control 
 # CNVs provided by Tom Fitzgerald.
-## NOTE: requires R-3.1 or higher for dplyr library
-
-if (!(as.numeric(R.Version()$major) >= 3 & as.numeric(R.Version()$minor) > 0.1)) {
-    stop("need R version 3.0.1 or higher for dplyr.")
-}
-
-library(dplyr)
-library(reshape)
-library(ggplot2)
-library(Cairo)
 
 EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance"
 DATA_DIR = file.path(EXOME_DIR, "data")
 RESULTS_DIR = file.path(EXOME_DIR, "results")
 POSITIVE_CONTROL_CNV_PATH = file.path(DATA_DIR, "control_CNVs_inheritance_jeremy.txt")
 
+#' open the inheritance calls predicted from the exome data
+#' 
+#' We might start off with the exome-based CNV cals split across multiple 
+#' files. This function loads all the separate files (if necessary), and
+#' generates a file with all the CNV calls from the separate files in it, so
+#' that we can load that single file later.
+#' 
+#' @param folder folder containing files with the exome inheritance calls
+#' @return dataframe containing CNV inheritance calls from the exome-based 
+#'     classifier
 open_inheritance_calls <- function(folder) {
-    # open the inheritance calls predicted from the exome data
-    # 
-    # We might start off with the exome-based CNV cals split across multiple 
-    # files. This function loads all the separate files (if necessary), and
-    # generates a file with all the CNV calls from the separate files in it, so
-    # that we can load that single file later.
-    # 
-    # Args:
-    #     folder: folder containing files with the exome inheritance calls
-    # 
-    # Returns:
-    #     dataframe containing CNV inheritance calls from the exome-based 
-    #     classifier
     
     # if we have already merged the files together, don't worry about doing this
     # again
@@ -53,14 +40,12 @@ open_inheritance_calls <- function(folder) {
     return(cnvs)
 }
 
+#' open the inheritance calls predicted from the array data.
+#' 
+#' @param path path to the VICAR classification data file
+#' 
+#' @return dataframe containing VICAR CNVs
 open_vicar_calls <- function(path) {
-    # open the inheritance calls predicted from the array data.
-    # 
-    # Args:
-    #     path: path to the VICAR classification data file
-    # 
-    # Returns:
-    #     dataframe containing VICAR CNVs
     
     cnvs = read.table(path, stringsAsFactors = FALSE, header = TRUE)
     cnvs$chr = as.character(cnvs$chr)
@@ -76,17 +61,15 @@ open_vicar_calls <- function(path) {
     return(cnvs)
 }
 
+#' combines the VICAR and exome-based inheritance calls
+#' 
+#' @param exome_calls CNVs, with inheritance predictions from the exome 
+#'         inheritance classifier
+#' @param array_calls CNVs with inheritance predictions from VICAR
+#' 
+#' @return a dataframe where the VICAR and exome predictions are merged, and the
+#'     prediction names are standardised between classifiers
 combine_cnv_calls <- function(exome_calls, array_calls) {
-    # combines the VICAR and exome-based inheritance calls
-    # 
-    # Args:
-    #     exome_calls: CNVs, with inheritance predictions from the exome 
-    #         inheritance classifier
-    #     array_calls: CNVs with inheritance predictions from VICAR
-    # 
-    # Returns:
-    #     a dataframe where the VICAR and exome predictions are merged, and the
-    #     prediction names are standardised between classifiers
     
     cnvs = merge(array_calls, exome_calls, by = c("chr", "chr_start", 
         "chr_end", "proband_stable_id", "inherit_type"))
@@ -116,15 +99,13 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     return(cnvs)
 }
 
+#' restrict ourselves to the set of CNVs with VICAR calls that are certain,
+#' ie drop all of the "insufficient", "inconclusive" etc calls
+#' 
+#' @param cnvs dataframe of CNVs
+#' 
+#' @return dataframe of CNVs, restrcicted to ones with certain calls
 get_certain_cnvs <- function(cnvs) {
-    # restrict ourselves to the set of CNVs with VICAR calls that are certain,
-    # ie drop all of the "insufficient", "inconclusive" etc calls
-    # 
-    # Args:
-    #     cnvs: dataframe of CNVs
-    # 
-    # Returns:
-    #     dataframe of CNVs, restrcicted to ones with certain calls
     
     uncertain_vicar_calls = c("inconclusive", "noCNVfound", "inconclusiveDuo", 
         "insufficient", "noCNVDuo", "noCNVfoundProband", "noCNVprobandDuo")
@@ -133,16 +114,14 @@ get_certain_cnvs <- function(cnvs) {
     return(certain_cnvs)
 }
 
+#' check how different metrics impact matching the inheritance state
+#' 
+#' @param cnvs dataframe of CNVs
+#' @param column column from CNVs data frame, to be used to bin the CNVs
+#' @param title string for the title of the plot
+#' 
+#' @return a qplot, to be include in a multi-plot later on
 bin_cnvs <- function(cnvs, column, title) {
-    # check how different metrics impact matching the inheritance state
-    # 
-    # Args:
-    #     cnvs: dataframe of CNVs
-    #     column: column from CNVs data frame, to be used to bin the CNVs
-    #     title: string for the title of the plot
-    # 
-    # Returns:
-    #    a qplot, to be include in a multi-plot later on
     
     probs = seq(0.0, 1, 0.2)
     breaks = quantile(column, probs, names=FALSE)
@@ -182,15 +161,11 @@ vp.layout <- function(x, y){
     viewport(layout.pos.row=x, layout.pos.col=y)
 }
 
+#' analyse how well the exome predictions match the VICAR predictions
+#' 
+#' @param cnvs dataframe of CNVs with exome-based and VIAR inheritance states
+#' @param pdf_filename filename to export plots into
 analyse_performance <- function(cnvs, pdf_filename) {
-    # analyse how well the exome predictions match the VICAR predictions
-    # 
-    # Args:
-    #     cnvs: dataframe of CNVs with exome-based and VIAR inheritance states
-    #     pdf_filename: filename to export plots into
-    # 
-    # Returns:
-    #     nothing
     
     # tabulate the differences between VICAR and exome calls
     print(cast(cnvs, predicted_inheritance ~ consistent, value = "proband_stable_id", length))

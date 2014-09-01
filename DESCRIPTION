@@ -1,0 +1,20 @@
+Package: CIFER
+Title: CNV inheritance from exome read-depths
+Version: 0.1
+Authors@R: "Jeremy McRae <jeremy.mcrae@sanger.ac.uk> [aut, cre]"
+Description: Classifies the inheritance of CNV calls using exome read-depth
+    data. This classifies each CNV as maternally, paternally, biparentally
+    inherited, or not inherited. Attempts to separate not inherited CNVs into
+    false positive CNV calls and true de novos. Allows for uncertain
+    classifications, and also includes some error states.
+Depends:
+    R (>= 3.0.1)
+License: GPL-2
+LazyData: true
+Imports:
+    mixtools (>= 1.0.2),
+    gdata (>= 2.13.3),
+    Cairo (>= 1.5-5),
+    dplyr,
+    reshape,
+    ggplot2
