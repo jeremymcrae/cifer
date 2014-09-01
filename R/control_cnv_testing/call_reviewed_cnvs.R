@@ -6,7 +6,7 @@ library(gdata)
 source("plot_clusters.R")
 source("call_exome_cnvs.R")
 
-PLOT_GRAPHS = FALSE
+PLOT_GRAPHS = TRUE
 REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/data/exome_only_denovo_cnvs.xlsx"
 
 get_reviewed_cnvs <- function(path) {
@@ -36,6 +36,10 @@ classify_reviewed_cnvs <- function() {
     ddd = get_ddd_individuals(DATAFREEZE_DIR)
     cnvs = get_reviewed_cnvs(REVIEWED_CNV_PATH)
     cnvs$predicted_inheritance = NA
+    cnvs$mom_value = NA
+    cnvs$dad_value = NA
+    cnvs$proband_value = NA
+    cnvs$proband_z_score = NA
     
     if (PLOT_GRAPHS) {
         plot_path = paste("../cnv_inh.adm3_vs_correlations.pdf", sep = "")
@@ -45,20 +49,25 @@ classify_reviewed_cnvs <- function() {
     
     for (row_num in 1:nrow(cnvs)) {
         
-        row = cnvs[row_num, ]
+        cnv = cnvs[row_num, ]
         
         # define the parameters of the CNV
-        proband_id = row$person_id
-        chrom = row$CHROM
-        start = row$POS
-        stop = row$INFO.END
+        proband_id = cnv$person_id
+        chrom = cnv$CHROM
+        start = cnv$POS
+        stop = cnv$INFO.END
         paternal_id = unique(ddd[ddd$individual_id == proband_id, ]$dad_id)
         maternal_id = unique(ddd[ddd$individual_id == proband_id, ]$mum_id)
         
         # run the CNV inheritance classification
         print(c(proband_id, chrom, start))
-        inh = classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start, stop)
-        cnvs[row_num, ]$predicted_inheritance = inh
+        inh = classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start, stop, cnv)
+        cnvs[row_num, ]$predicted_inheritance = inh$inheritance
+        cnvs[row_num, ]$mom_value = inh$family$mom_value
+        cnvs[row_num, ]$dad_value = inh$family$dad_value
+        cnvs[row_num, ]$proband_value = inh$family$proband_value
+        cnvs[row_num, ]$proband_z_score = inh$family$proband_z_score
+        
     }
     
     if (PLOT_GRAPHS) {
