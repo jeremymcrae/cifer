@@ -1,10 +1,13 @@
 # classifies a set of CVNs that have been assigned inhertance states by VICAR,
 # so we can compare the automated predictions vs the VICAR classifications.
 
+library(cifer)
+
 num = commandArgs(trailingOnly = TRUE)
 
 PLOT_GRAPHS = FALSE
-POSITIVE_CONTROL_CNV_PATH = paste("/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/data/control_CNVs_inheritance_jeremy.txt", num, ".txt", sep = "")
+DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"
+POSITIVE_CONTROL_CNV_PATH = paste("/nfs/users/nfs_j/jm33/apps/cifer/data/control_CNVs_inheritance_jeremy.txt", num, ".txt", sep = "")
 
 #' open a dataset containing CNV regions by individual, with reviewed calls
 #' 

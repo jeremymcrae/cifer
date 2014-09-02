@@ -1,10 +1,13 @@
 # script to examine the output from predicting CNV inheritance for the control 
 # CNVs provided by Tom Fitzgerald.
 
-EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance"
+library(cifer)
+
+EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/cifer"
 DATA_DIR = file.path(EXOME_DIR, "data")
 RESULTS_DIR = file.path(EXOME_DIR, "results")
 POSITIVE_CONTROL_CNV_PATH = file.path(DATA_DIR, "control_CNVs_inheritance_jeremy.txt")
+DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"
 
 #' open the inheritance calls predicted from the exome data
 #' 

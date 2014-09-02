@@ -1,17 +1,15 @@
 # functions to load probe data for the DDD population
 # 
 
-TEMP_DIR = "/lustre/scratch113/projects/ddd/users/jm33/aggregated_convex"
-
 #' find the convex data files for each DDD individual
 #' 
 #' @param ddd data frame of participant informatyion, including sample IDs
+#' @param convex_dir path to folder containing individual L2R datafiles
 #' @export
 #' @return dataframe with additional column of file paths
-find_convex_files <- function(ddd) {
+find_convex_files <- function(ddd, convex_dir) {
     
     # convex_dir = "/nfs/ddd2/ddd_convex_data"
-    convex_dir = "/lustre/scratch113/projects/ddd/users/ddd/DDD_ANALYSIS/convex/data"
     
     ddd$convex_path = NA
     individuals = unique(ddd$individual_id)
@@ -72,6 +70,7 @@ chrom_num <- function(chrom) {
 #'     the file
 #' @param chrom chrom that we are searching for
 #' @param start start position of the CNV
+#' @param filesize size of L2R file in bytes
 #' @export
 #' @return the approximate byte offset in the file (to within a few hundred
 #'    bytes) where the required data starts
@@ -131,10 +130,14 @@ find_file_pos <- function(path, start_pos, chrom, start, file_size) {
 #' @param path path to L2R dataset
 #' @param file_pos position in the file to jump ahead to
 #' @param lines_n number of lines to read in
-#' @param header vector of header strings
+#' @param chrom chromosome string for current CNV
+#' @param start CNV start nucleotide position as integer
+#' @param filesize size of L2R file in bytes
+#' @param l2r_type string indicating the type of L2R scores to load, "adm3" or 
+#'     "l2r"
 #' @export
 #' @return dataframe of probe information, with one row per probe
-extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, filesize) {
+extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, filesize, l2r_type) {
     
     pos = find_file_pos(path, file_pos, chrom, start, filesize)
     
@@ -142,11 +145,20 @@ extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, files
     file_con = file(path, open = "r")
     prev_pos = seek(file_con, pos, origin = "start")
     
+    # figure out which columns of the line to load, depending on whether we are
+    # using L2R or ADM3 scores
+    line_classes = c("character", "numeric", "numeric", "NULL", "NULL", "NULL",
+        "NULL", "NULL")
+    if (l2r_type == "adm3") {
+        line_classes[8] = "numeric"
+    } else if (l2r_type == "l2r") {
+        line_classes[4] = "numeric"
+    }
+    
     # read sufficient lines from the file, to contain the correct positions. 
     # Skip the first line, since it is probably not a full line.
     probes = read.table(file_con, skip = 1, nrows = lines_n + 3, header = FALSE,
-        sep = "\t", stringsAsFactors = FALSE, colClasses = c("character", 
-        "numeric", "numeric", "NULL", "NULL", "NULL", "NULL", "numeric"))
+        sep = "\t", stringsAsFactors = FALSE, colClasses = line_classes)
     close(file_con)
     
     names(probes) = c("chrom", "start", "stop", "score")
@@ -160,17 +172,20 @@ extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, files
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
 #' @param start chromosome position that the CNV region starts at
 #' @param stop chromosome position that the CNV region ends at
+#' @param l2r_type string indicating the type of L2R scores to load, "adm3" or 
+#'     "l2r"
+#' @param l2r_dir path to folder containing the aggregated L2R scores
 #' @export
 #' @return a dataframe containing all the data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-open_probes_data_fast <- function(ddd, chrom, start, stop) {
+open_probes_data_fast <- function(ddd, chrom, start, stop, l2r_type, l2r_dir) {
     
-    regions_path = file.path(TEMP_DIR, paste("adm3_region_index.chr", chrom, 
+    regions_path = file.path(l2r_dir, paste(l2r_type, "_index.chr", chrom, 
         ".txt", sep = ""))
     index_data = read.table(regions_path, header = TRUE, sep = "\t",
         comment.char="", colClasses=c("character", "numeric", "numeric"))
     
-    path = file.path(TEMP_DIR, paste("adm3_dataset.chr", chrom, ".txt", sep = ""))
+    path = file.path(l2r_dir, paste(l2r_type, "_dataset.chr", chrom, ".txt", sep = ""))
     header = read.table(path, header = TRUE, sep = "\t", nrows = 1)
     
     # figure out which lines of the index file correspond to the correct region
@@ -213,11 +228,13 @@ open_probes_data_fast <- function(ddd, chrom, start, stop) {
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
 #' @param start chromosome position that the CNV region starts at
 #' @param stop chromosome position that the CNV region ends at
+#' @param l2r_type string indicating the type of L2R scores to load, "adm3" or 
+#'     "l2r"
 #' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-open_probes_data_slow <- function(ddd, chrom, start, stop) {
-        
+open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
+    
     convex = ddd[!is.na(ddd$convex_path), ]
     header = c("chrom", "start", "stop", "l2r", "V5", "V6", "V7", "adm3")
     
@@ -247,7 +264,7 @@ open_probes_data_slow <- function(ddd, chrom, start, stop) {
         file_size = file.info(sample$convex_path)$size
         file_pos = ((start_index/nrow(index_data)) * file_size) - 5000
         
-        probes = extract_lines_from_file(sample$convex_path, file_pos, lines_n, chrom, start, file_size)
+        probes = extract_lines_from_file(sample$convex_path, file_pos, lines_n, chrom, start, file_size, l2r_type)
         
         # select the correct rows, and drop the first three columns with the 
         # chrom, start and stop
@@ -276,20 +293,20 @@ open_probes_data_slow <- function(ddd, chrom, start, stop) {
 #' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-get_probes_data <- function(ddd, chrom, start, stop) {    
-    regions_path = file.path(TEMP_DIR, paste("adm3_region_index.chr", chrom, 
-        ".txt", sep = ""))
+get_probes_data <- function(ddd, chrom, start, stop, l2r_type="adm3", convex_dir="/lustre/scratch113/projects/ddd/users/ddd/DDD_ANALYSIS/convex/data", l2r_dir="/lustre/scratch113/projects/ddd/users/jm33/aggregated_convex") {    
+    regions_path = file.path(l2r_dir, paste(l2r_type, "_index.chr",
+        chrom, ".txt", sep = ""))
     
     # we have two options, if we have pre-generated single data files per
     # chromosome (using python combine_l2r_data.py), we use a faster function 
     # than having to extract data from all the separate files one by one
     if (file.exists(regions_path)) {
-        probes = open_probes_data_fast(ddd, chrom, start, stop)
+        probes = open_probes_data_fast(ddd, chrom, start, stop, l2r_type, l2r_dir)
     } else {
         if (!("convex_path" %in% names(ddd))) {
-           ddd = find_convex_files(ddd)
+           ddd = find_convex_files(ddd, convex_dir)
         }
-        probes = open_probes_data_slow(ddd, chrom, start, stop)
+        probes = open_probes_data_slow(ddd, chrom, start, stop, l2r_type)
     }
     
     return(probes)

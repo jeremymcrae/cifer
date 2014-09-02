@@ -1,8 +1,6 @@
 # find the inheritance status for CNVs called by CONVEX from exome data
 # 
 
-DATAFREEZE_DIR = "/nfs/ddd0/Data/datafreeze/1133trios_20131218"
-
 #' function to classify single CNV based on sample IDs, and CNV coordinates
 #' 
 #' @param proband_id sample ID for the proband (eg DDDP100001)
@@ -14,17 +12,22 @@ DATAFREEZE_DIR = "/nfs/ddd0/Data/datafreeze/1133trios_20131218"
 #' @param cnv one row dataframe that contains the details of the CNV. Optional,
 #'     only used if we need to plot the CNV, when we need to note any
 #'     existing inheritance classification.
+#' @param DATAFREEZE_DIR path to datafreeze directory containing files with family
+#'     relationships and sanger IDs
 #' @export
 #' @return inheritance classification as a string eg "paternal_inh", "de_novo" etc
-classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, start, stop, cnv=NA) {
+classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, start, stop, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
     
     ddd = get_ddd_individuals(DATAFREEZE_DIR)
     probes = try(get_probes_data(ddd, chrom, start, stop), silent = TRUE)
+    
+    # set the default return values, in case loading probe data gave an error
+    prediction = list(inheritance = "no_probe_data_for_CNV_region", mom_value=NA, dad_value=NA)
+    
+    # if we have loaded some probe scores, then try to predict inheritance
     if (class(probes) != "try-error") {
         prediction = process_cnv_call(ddd, probes, proband_id, maternal_id, paternal_id, cnv)
-    } else {
-        prediction = list(inheritance = "no_probe_data_for_CNV_region", mom_value = NA, dad_value = NA)
-    }
+    } 
     
     return(prediction)
 }
@@ -56,19 +59,19 @@ get_ddd_individuals <- function(samples_dir) {
 #' @param mother l2r values for the mother of the current proband
 #' @param father l2r values for the father of the current proband
 #' @param proband l2r values for the current proband
-#' @param population_l2r_set l2r values for parents not in proband's family
+#' @param population l2r values for parents not in proband's family
 #' @export
 #' @return list of z scores for population (as vector), and z scores for proband
 #'     family (as list)
-get_l2r_z_scores <- function(mother, father, proband, population_l2r_set) {
+get_l2r_z_scores <- function(mother, father, proband, population) {
     
     # determine the log2 ratio population distribution
-    population_l2r = colMeans(population_l2r_set, na.rm = TRUE)
+    population_l2r = colMeans(population, na.rm = TRUE)
     pop_mean = mean(population_l2r, na.rm=TRUE)
     pop_sd = sd(population_l2r, na.rm=TRUE)
     
     # get the z-scores of mean log2 ratios for the population, and for the 
-    # parents of the proband
+    # trio members
     population = (population_l2r - pop_mean)/pop_sd
     mom = (mean(mother, na.rm = TRUE) - pop_mean)/pop_sd
     dad = (mean(father, na.rm = TRUE) - pop_mean)/pop_sd
@@ -98,11 +101,14 @@ get_null_parameters <-function(z_scores) {
     dens = density(z_scores)
     maxima = which(diff(sign(diff(dens$y))) == -2) + 1
     
-    # exclude maxima that are simply blips, and do not contribute greatly, and
-    # drop out single maxima from pairs that are too close together
+    # exclude maxima that are simply blips, and thus do not contribute greatly,
+    # and drop out single maxima from pairs that are too close together
     maxima = maxima[dens$y[maxima] / max(dens$y[maxima]) > 0.05]
-    maxima = maxima[maxima - c(-100000, maxima) > 0.7]
+    if (length(maxima) > 1) {
+        maxima = maxima[-c(which(diff(maxima) < 0.7) + 1)]
+    }
     
+    # if there is only one peak, then we can simply assume that the
     if (length(maxima) == 1) {
         null_mean = mean(z_scores)
         null_sd = sd(z_scores)
@@ -112,7 +118,7 @@ get_null_parameters <-function(z_scores) {
         # Note that this occurs when the blips are prevalent enough to affect
         # fitting a normal distribution, ie has local maxima greater than 5% of
         # the peak maxima.
-        l2r_model = normalmixEM(z_scores, k = length(maxima), maxrestarts = 100)
+        l2r_model = normalmixEM(z_scores, k = length(maxima), maxrestarts = 50)
         
         # use the model closest to 0 as the null distribution, or could use the
         # model with the highest peak

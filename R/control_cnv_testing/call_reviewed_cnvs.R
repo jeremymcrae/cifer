@@ -1,8 +1,12 @@
 # classifies a set of CVNs that have been manually assigned inhertance states,
 # so we can compare the automated predictions vs the manual classifications.
 
+library(cifer)
+library(gdata)
+
 PLOT_GRAPHS = TRUE
-REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/exome_cnv_inheritance/data/exome_only_denovo_cnvs.xlsx"
+REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/cifer/data/exome_only_denovo_cnvs.xlsx"
+DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"
 
 #' open a dataset containing CNV regions by individual, with reviewed calls
 #' 
