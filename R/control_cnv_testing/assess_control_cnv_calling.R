@@ -77,6 +77,13 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     cnvs = merge(array_calls, exome_calls, by = c("chr", "chr_start", 
         "chr_end", "proband_stable_id", "inherit_type"))
     
+    # exclude cnvs with low MAD ratios, since they are more likely to be false
+    # positives, and also filter to the rare CNVs (to match some analysis that
+    # Tom ran)
+    cnvs$mad_ratio = abs(cnvs$ratio_mean/cnvs$mad_region)
+    cnvs = cnvs[cnvs$mad_ratio > 10, ]
+    cnvs = cnvs[cnvs$rare == 1, ]
+    
     # exclude CNVs without matching exome data
     cnvs = cnvs[cnvs$predicted_inheritance != "proband_not_in_datafreeze", ]
     cnvs = cnvs[cnvs$predicted_inheritance != "no_probe_data_for_CNV_region", ]
@@ -84,7 +91,9 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     
     # standardise the inheritance state names to those given by VICAR
     cnvs$inheritance = NA
+    cnvs$inheritance[cnvs$predicted_inheritance == "deNovo"] = "deNovo"
     cnvs$inheritance[cnvs$predicted_inheritance == "de_novo"] = "deNovo"
+    cnvs$inheritance[cnvs$predicted_inheritance == "not_inherited"] = "deNovo"
     cnvs$inheritance[cnvs$predicted_inheritance == "paternal_inh"] = "paternal"
     cnvs$inheritance[cnvs$predicted_inheritance == "maternal_inh"] = "maternal"
     cnvs$inheritance[cnvs$predicted_inheritance == "biparental_inh"] = "biparental"
@@ -96,8 +105,12 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     
     # I assume inheritedDuo means the same thing as biparental. Why the difference?
     cnvs$inherit_type[cnvs$inherit_type == "inheritedDuo"] = "biparental"
-    
     cnvs$consistent = as.character(cnvs$inherit_type) == as.character(cnvs$predicted_inheritance)
+    
+    # drop probands with excessive number of CNV calls
+    cnv_counts = table(cnvs$proband_stable_id)
+    keep_probands = names(cnv_counts[cnv_counts <= 10])
+    cnvs = cnvs[cnvs$proband_stable_id %in% keep_probands, ]
     
     return(cnvs)
 }

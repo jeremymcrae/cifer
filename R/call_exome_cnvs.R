@@ -16,7 +16,8 @@
 #'     relationships and sanger IDs
 #' @export
 #' @return inheritance classification as a string eg "paternal_inh", "de_novo" etc
-classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, start, stop, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
+classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, 
+    start, stop, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
     
     ddd = get_ddd_individuals(DATAFREEZE_DIR)
     probes = try(get_probes_data(ddd, chrom, start, stop), silent = TRUE)

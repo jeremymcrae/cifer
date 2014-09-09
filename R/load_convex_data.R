@@ -293,7 +293,10 @@ open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
 #' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-get_probes_data <- function(ddd, chrom, start, stop, l2r_type="adm3", convex_dir="/lustre/scratch113/projects/ddd/users/ddd/DDD_ANALYSIS/convex/data", l2r_dir="/lustre/scratch113/projects/ddd/users/jm33/aggregated_convex") {    
+get_probes_data <- function(ddd, chrom, start, stop, l2r_type="adm3", 
+    convex_dir="/lustre/scratch113/projects/ddd/users/ddd/DDD_ANALYSIS/convex/data",
+    l2r_dir="/lustre/scratch113/projects/ddd/users/jm33/aggregated_convex") {
+     
     regions_path = file.path(l2r_dir, paste(l2r_type, "_index.chr",
         chrom, ".txt", sep = ""))
     

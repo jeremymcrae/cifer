@@ -1,7 +1,11 @@
 # classifies a set of CVNs that have been assigned inhertance states by VICAR,
 # so we can compare the automated predictions vs the VICAR classifications.
 
-library(cifer)
+print(getwd())
+
+# library(cifer)
+source("./R/call_exome_cnvs.R")
+source("./R/load_convex_data.R")
 
 num = commandArgs(trailingOnly = TRUE)
 
@@ -32,12 +36,8 @@ classify_control_cnvs <- function() {
     cnvs$predicted_inheritance = NA
     cnvs$mom_value = NA
     cnvs$dad_value = NA
-    
-    if (PLOT_GRAPHS) {
-        plot_path = paste("../cnv_inh.adm3_vs_correlations.pdf", sep = "")
-        Cairo(file = plot_path, type = "pdf", height = 30, width = 22, units = "cm")
-        par(mfrow = c(4, 3))
-    }
+    cnvs$proband_value = NA
+    cnvs$proband_z_score = NA
     
     for (row_num in 1:nrow(cnvs)) {
         
@@ -62,12 +62,10 @@ classify_control_cnvs <- function() {
         print(c(proband_id, chrom, start))
         inh = classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start, stop)
         cnvs[row_num, ]$predicted_inheritance = inh$inheritance
-        cnvs[row_num, ]$mom_value = inh$mom_value
-        cnvs[row_num, ]$dad_value = inh$dad_value
-    }
-    
-    if (PLOT_GRAPHS) {
-        dev.off()
+        cnvs[row_num, ]$mom_value = inh$family$mom_value
+        cnvs[row_num, ]$dad_value = inh$family$dad_value
+        cnvs[row_num, ]$proband_value = inh$family$proband_value
+        cnvs[row_num, ]$proband_z_score = inh$family$proband_z_score
     }
     
     write.table(cnvs, file = paste("../cnv_inh.control_predictions", num, ".txt", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE)
