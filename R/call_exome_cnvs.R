@@ -119,7 +119,7 @@ get_null_parameters <-function(z_scores) {
         # Note that this occurs when the blips are prevalent enough to affect
         # fitting a normal distribution, ie has local maxima greater than 5% of
         # the peak maxima.
-        l2r_model = normalmixEM(z_scores, k = length(maxima), maxrestarts = 50)
+        l2r_model = mixtools::normalmixEM(z_scores, k = length(maxima), maxrestarts = 50)
         
         # use the model closest to 0 as the null distribution, or could use the
         # model with the highest peak

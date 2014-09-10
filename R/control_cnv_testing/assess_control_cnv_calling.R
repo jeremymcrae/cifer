@@ -1,7 +1,6 @@
 # script to examine the output from predicting CNV inheritance for the control 
 # CNVs provided by Tom Fitzgerald.
 
-library(cifer)
 library(dplyr)
 library(reshape)
 library(Cairo)

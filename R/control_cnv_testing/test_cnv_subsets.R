@@ -3,6 +3,7 @@
 # 
 
 library(cifer)
+library(gdata)
 
 REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/cifer/control_data/exome_only_denovo_cnvs.xlsx"
 DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"

@@ -3,6 +3,7 @@
 
 library(cifer)
 library(gdata)
+library(Cairo)
 
 PLOT_GRAPHS = TRUE
 REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/cifer/control_data/exome_only_denovo_cnvs.xlsx"
