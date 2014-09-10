@@ -27,12 +27,13 @@ get_parental_correlations <- function(proband, mother, father) {
 #' 
 #' @param ddd dataframe containing all the DDD sample information.
 #' @param probes L2R or ADM3 scores for all individuals for probes within the CNV
+#' @param proband_ids vector of proband IDs, except for the trio being investigated
 #' @param parent_ids vector of parental IDs, except for the trio under
 #'     investigation, sorted as for the vector of parental Z scores. 
 #' @export
 #' @return numeric vector of correlation scores, (with sample IDs as names), 
 #'     sorted according to the parent_ids vector.
-get_population_correlation <- function(ddd, probes, parent_ids) {
+get_population_correlation <- function(ddd, probes, proband_ids, parent_ids) {
     
     correlations = rep(NA, length(parent_ids))
     names(correlations) = parent_ids
@@ -87,7 +88,7 @@ include_graphs <- function(ddd, probes, z_scores, proband_id, maternal_id, pater
     parent_ids = names(z_scores$population)
     
     # get the correlation between each proband and their parents L2R values
-    correlations = get_population_correlation(ddd, probes, parent_ids)
+    correlations = get_population_correlation(ddd, probes, proband_ids, parent_ids)
     
     # # plot the clusters
     plot_cluster(z_scores, correlations, trio_corr, cnv)
@@ -97,11 +98,11 @@ include_graphs <- function(ddd, probes, z_scores, proband_id, maternal_id, pater
 #' plot the parental data points, in order to quickly assess how far away
 #' from the normal population that parental data points are.
 #' 
-#' @param z_score: Z scores of L2R for the parental population
+#' @param z_scores Z scores of L2R for the parental population
 #' @param correlations correlations of parental L2R to child L2R for the 
 #'      parental population
 #' @param trio_corr correlations of mother's L2R to proband's L2R
-#' @param row row of data frame for CNV containing the proband ID, chrom, 
+#' @param cnv row of data frame for CNV containing the proband ID, chrom, 
 #'      start, stop, manually reviewed call, which we use in the title of 
 #'      the plot.
 #' @export

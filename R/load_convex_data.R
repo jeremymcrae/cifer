@@ -70,7 +70,7 @@ chrom_num <- function(chrom) {
 #'     the file
 #' @param chrom chrom that we are searching for
 #' @param start start position of the CNV
-#' @param filesize size of L2R file in bytes
+#' @param file_size size of L2R file in bytes
 #' @export
 #' @return the approximate byte offset in the file (to within a few hundred
 #'    bytes) where the required data starts
@@ -290,6 +290,9 @@ open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
 #' @param start chromosome position that the CNV region starts at
 #' @param stop chromosome position that the CNV region ends at
+#' @param l2r_type type of log2-ratio data to load (either "l2r" or "adm3")
+#' @param convex_dir path folder containing individual log2-ratio data
+#' @param l2r_dir path to folder containing aggregated log2-ratio data
 #' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe

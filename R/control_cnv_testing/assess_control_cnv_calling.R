@@ -9,7 +9,7 @@ library(ggplot2)
 library(grid)
 
 EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/cifer"
-DATA_DIR = file.path(EXOME_DIR, "data")
+DATA_DIR = file.path(EXOME_DIR, "control_data")
 RESULTS_DIR = file.path(EXOME_DIR, "results")
 POSITIVE_CONTROL_CNV_PATH = file.path(DATA_DIR, "control_CNVs_inheritance_jeremy.txt")
 DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"

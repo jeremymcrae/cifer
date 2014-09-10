@@ -235,6 +235,7 @@ classify_inheritance <- function(mom_p_value, dad_p_value, proband_p_value) {
 
 #' predict the inheritance state of the CNV call
 #' 
+#' @param ddd dataframe listing sample IDs, and file paths
 #' @param probes dataframe of log-2-ratio (or adm3 score) values for all DDD
 #'     participants, for the exome probes that lie within the CNV region.
 #' @param proband_id ID of the proband

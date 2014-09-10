@@ -4,7 +4,7 @@
 
 library(cifer)
 
-REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/cifer/data/exome_only_denovo_cnvs.xlsx"
+REVIEWED_CNV_PATH = "/nfs/users/nfs_j/jm33/apps/cifer/control_data/exome_only_denovo_cnvs.xlsx"
 DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"
 
 #' test the inheritance classification of subsets of probes in a CNV

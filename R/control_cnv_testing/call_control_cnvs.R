@@ -9,7 +9,7 @@ num = commandArgs(trailingOnly = TRUE)
 
 PLOT_GRAPHS = FALSE
 DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"
-POSITIVE_CONTROL_CNV_PATH = paste("/nfs/users/nfs_j/jm33/apps/cifer/data/control_CNVs_inheritance_jeremy.txt", num, ".txt", sep = "")
+POSITIVE_CONTROL_CNV_PATH = paste("/nfs/users/nfs_j/jm33/apps/cifer/control_data/control_CNVs_inheritance_jeremy.txt", num, ".txt", sep = "")
 
 #' open a dataset containing CNV regions by individual, with reviewed calls
 #' 
