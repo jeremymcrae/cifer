@@ -2,6 +2,11 @@
 # CNVs provided by Tom Fitzgerald.
 
 library(cifer)
+library(dplyr)
+library(reshape)
+library(Cairo)
+library(ggplot2)
+library(grid)
 
 EXOME_DIR = "/nfs/users/nfs_j/jm33/apps/cifer"
 DATA_DIR = file.path(EXOME_DIR, "data")
@@ -98,6 +103,7 @@ combine_cnv_calls <- function(exome_calls, array_calls) {
     cnvs$inheritance[cnvs$predicted_inheritance == "maternal_inh"] = "maternal"
     cnvs$inheritance[cnvs$predicted_inheritance == "biparental_inh"] = "biparental"
     cnvs$inheritance[cnvs$predicted_inheritance == "uncertain"] = "uncertain"
+    cnvs$inheritance[cnvs$predicted_inheritance == "false_positive"] = "false_positive"
     
     # and reorganise the column names
     cnvs$predicted_inheritance = cnvs$inheritance
@@ -215,8 +221,6 @@ main <- function() {
     # the exome-based calls
     analyse_performance(cnvs, "all_cnvs.pdf")
     analyse_performance(certain_cnvs, "cnvs_with_certain_vicar_classifications.pdf")
-    analyse_performance(rare_cnvs, "rare_cnvs.pdf")
-    analyse_performance(common_cnvs, "common_cnvs.pdf")
     
 }
 

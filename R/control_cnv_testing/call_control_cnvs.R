@@ -1,8 +1,6 @@
 # classifies a set of CVNs that have been assigned inhertance states by VICAR,
 # so we can compare the automated predictions vs the VICAR classifications.
 
-print(getwd())
-
 # library(cifer)
 source("./R/call_exome_cnvs.R")
 source("./R/load_convex_data.R")
