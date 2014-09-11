@@ -7,11 +7,11 @@ log2-ratio scores in a population of unrelated trios (specifically, the parents
 of the trios).
 
 ### Predicting inheritance:
-```# using the installed package should involve
+Using the installed package should involve calling the classification function
+and accessing the inheritance prediction as:
+```R
 library(cifer)
-# calling the classification function
 prediction <- classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start, stop)
-# the inheritance prediction can be accessed as:
 inheritance <- prediction$inheritance
 ```
 
@@ -35,15 +35,14 @@ And can be obtained with: `git clone https://github.com/jeremymcrae/cifer.git`
 ### Building the CIFER package:
 Change to the cifer directory, and start R.
 
-```
-# Load devtools and roxygen (requires R >= 3.0.1):
+Load devtools and roxygen (requires R >= 3.0.1), construct the package 
+documentation, check the package contents are correct, which should complete 
+without errors, aside from a note about a non-standard python directory. 
+Finally, build the package:
+```R
 library(devtools)
 library(roxygen)
-# construct the package documentation
 document()
-# check the package contents are correct, which should complete without errors, 
-# aside from a note about a non-standard python directory.
 check()
-# and build the package
 build()
 ```
