@@ -7,6 +7,7 @@ Description: Classifies the inheritance of CNV calls using exome read-depth
     inherited, or not inherited. Attempts to separate not inherited CNVs into
     false positive CNV calls and true de novos. Allows for uncertain
     classifications, and also includes some error states.
+    The source code can be found at: https://github.com/jeremymcrae/cifer
 Depends:
     R (>= 2.15.2)
 License: file LICENSE

@@ -13,6 +13,9 @@ RESULTS_DIR = file.path(EXOME_DIR, "results")
 POSITIVE_CONTROL_CNV_PATH = file.path(DATA_DIR, "control_CNVs_inheritance_jeremy.txt")
 DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218"
 
+# seed the random number generator, so we get repeatable selections of CNVs
+set.seed(1043290)
+
 #' open the inheritance calls predicted from the exome data
 #' 
 #' We might start off with the exome-based CNV cals split across multiple 
@@ -71,7 +74,7 @@ open_vicar_calls <- function(path) {
 #' combines the VICAR and exome-based inheritance calls
 #' 
 #' @param exome_calls CNVs, with inheritance predictions from the exome 
-#'         inheritance classifier
+#'     inheritance classifier
 #' @param array_calls CNVs with inheritance predictions from VICAR
 #' 
 #' @return a dataframe where the VICAR and exome predictions are merged, and the
@@ -203,6 +206,41 @@ analyse_performance <- function(cnvs, pdf_filename) {
     dev.off()
 }
 
+#' pick CNVs with mismatching inheritance predictions, for manual review
+#' 
+#' @param cnvs dataframe of high-quality CNVs with cifer and VICAR inheritance
+#'     predictions
+#'
+#' @return assess_cnvs dataframe of CNVs to be manually assessed
+select_cnvs_to_assess <- function(cnvs) {
+    
+    # select only the CNVs that do not match, so we can examine a sample of them
+    cnvs = cnvs[cnvs$consistent == FALSE, ]
+    
+    # split the cnvs into the different mismatch categories, so, for example, we
+    # could look at the CNVs where cifer predicted paternal, and VICAR 
+    # predicted inconclusive
+    cnvs$mismatch_type = paste(cnvs$inherit_type, cnvs$predicted_inheritance, sep = "-")
+    
+    # construct a url from which we will be able to examine the array CGH and
+    # exome data used to make the CNV call in the members of the trio
+    cnvs$url = paste("http://ddd-vm3.internal.sanger.ac.uk:9090/ddd.html?", cnvs$proband_sanger_id, ";", cnvs$chr, ";", cnvs$chr_start, ";", cnvs$chr_end, sep = "")
+    
+    cnvs = subset(cnvs, select = c(mismatch_type, proband_stable_id, chr, chr_start, chr_end, url))
+    
+    assess_cnvs = cnvs[0, ]
+    # for each mistmatch category, get a randome sample of up to ten CNV calls
+    for (mismatch in unique(cnvs$mismatch_type)) {
+        mismatches = cnvs[cnvs$mismatch_type == mismatch, ]
+        
+        selection = mismatches[sample(nrow(mismatches), 10, replace = TRUE), ]
+        selection = unique(selection)
+        assess_cnvs = rbind(assess_cnvs, selection)
+    }
+    
+    return(assess_cnvs)
+}
+
 main <- function() {
     vicar_calls = open_vicar_calls(POSITIVE_CONTROL_CNV_PATH)
     exome_calls = open_inheritance_calls(RESULTS_DIR)
@@ -221,6 +259,8 @@ main <- function() {
     analyse_performance(cnvs, "all_cnvs.pdf")
     analyse_performance(certain_cnvs, "cnvs_with_certain_vicar_classifications.pdf")
     
+    cnvs_for_assessment = select_cnvs_to_assess(cnvs)
+    write.table(cnvs_for_assessment, file = file.path(EXOME_DIR, "cnv_calls_to_review.txt"), sep = "\t", row.names = FALSE, quote = FALSE)
 }
 
 main()
