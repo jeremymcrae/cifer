@@ -11,7 +11,7 @@ Using the installed package should involve calling the classification function
 and accessing the inheritance prediction as:
 ```R
 library(cifer)
-prediction <- classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start, stop)
+prediction <- classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start_pos, stop_pos)
 inheritance <- prediction$inheritance
 ```
 
@@ -21,12 +21,12 @@ The classify_exome_cnv() arguments are:
 * paternal_id: sample ID for the proband's father
 * chrom: chromosome that the CNV is on (eg "1", "2", ..., "X")
 * start: start nucleotide of the CNV as integer
-* stop: stop nucleotide of the CNV as integer
+* stop_pos: stop nucleotide of the CNV as integer
 
 Optional arguments are:
-* cnv: dataframe of CNv info, not necessary for predicting inheritance, used
+* cnv: dataframe of CNV info, not necessary for predicting inheritance, used
     for evaluating CNVs if we plot the population distribution.
-# DATAFREEZE_DIR: path to folder containing files listing study samples, and
+* DATAFREEZE_DIR: path to folder containing files listing study samples, and
     their relationships.
 
 The code should be available at: https://github.com/jeremymcrae/cifer

@@ -7,8 +7,8 @@
 #' @param maternal_id sample ID for the proband's mother
 #' @param paternal_id sample ID for the proband's father
 #' @param chrom chromosome that the CNV is on (eg "1", "2", ..., "X")
-#' @param start start nucleotide of the CNV
-#' @param stop stop nucleotide of the CNV
+#' @param start_pos start nucleotide of the CNV
+#' @param stop_pos stop nucleotide of the CNV
 #' @param cnv one row dataframe that contains the details of the CNV. Optional,
 #'     only used if we need to plot the CNV, when we need to note any
 #'     existing inheritance classification.
@@ -17,10 +17,10 @@
 #' @export
 #' @return inheritance classification as a string eg "paternal_inh", "de_novo" etc
 classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, 
-    start, stop, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
+    start_pos, stop_pos, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
     
     ddd = get_ddd_individuals(DATAFREEZE_DIR)
-    probes = try(get_probes_data(ddd, chrom, start, stop), silent = TRUE)
+    probes = try(get_probes_data(ddd, chrom, start, stop_pos), silent = TRUE)
     
     # set the default return values, in case loading probe data gave an error
     prediction = list(inheritance = "no_probe_data_for_CNV_region", mom_value=NA, dad_value=NA)

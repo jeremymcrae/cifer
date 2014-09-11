@@ -66,20 +66,20 @@ chrom_num <- function(chrom) {
 #' down where to start loading data from.
 #' 
 #' @param path path to the datafile
-#' @param start_pos reasonable guess about where the correct data is located in 
+#' @param file_pos reasonable guess about where the correct data is located in 
 #'     the file
 #' @param chrom chrom that we are searching for
-#' @param start start position of the CNV
+#' @param start_pos start position of the CNV
 #' @param file_size size of L2R file in bytes
 #' @export
 #' @return the approximate byte offset in the file (to within a few hundred
 #'    bytes) where the required data starts
-find_file_pos <- function(path, start_pos, chrom, start, file_size) {
+find_file_pos <- function(path, file_pos, chrom, start_pos, file_size) {
     
     # seek to the correct part of the file
     size = file.info(path)$size
     file_con = file(path, open = "r")
-    prev_pos = seek(file_con, start_pos, origin = "start")
+    prev_pos = seek(file_con, file_pos, origin = "start")
     
     read = scan(file_con, what = character(), skip = 1, sep = "\t", nmax = 2, quiet = TRUE)
     temp_chrom = read[1]
@@ -89,11 +89,11 @@ find_file_pos <- function(path, start_pos, chrom, start, file_size) {
     # proportional to the filesize, so that we check across a larger range with
     # larger files
     offset = -file_size/200
-    if (temp_start <= start | (temp_chrom != chrom)) {offset = abs(offset)}
+    if (temp_start <= start_pos | (temp_chrom != chrom)) {offset = abs(offset)}
     
     # get the upper and lower bounds to bisect within
-    lower = min(start_pos, start_pos + offset)
-    upper = max(start_pos, start_pos + offset)
+    lower = min(file_pos, file_pos + offset)
+    upper = max(file_pos, file_pos + offset)
     
     # make sure we don't use negative seek positions, or go beyond the file size
     lower = max(lower, 0)
@@ -113,8 +113,8 @@ find_file_pos <- function(path, start_pos, chrom, start, file_size) {
         if (chrom_num(temp_chrom) > chrom_num(chrom)) {upper = mid_point; next}
         
         # narrow the boundaries to half the previous size
-        if (temp_start > start) {upper = mid_point}
-        if (temp_start <= start) {lower = mid_point}
+        if (temp_start > start_pos) {upper = mid_point}
+        if (temp_start <= start_pos) {lower = mid_point}
     }
     
     close(file_con)
@@ -131,15 +131,15 @@ find_file_pos <- function(path, start_pos, chrom, start, file_size) {
 #' @param file_pos position in the file to jump ahead to
 #' @param lines_n number of lines to read in
 #' @param chrom chromosome string for current CNV
-#' @param start CNV start nucleotide position as integer
+#' @param start_pos CNV start nucleotide position as integer
 #' @param filesize size of L2R file in bytes
 #' @param l2r_type string indicating the type of L2R scores to load, "adm3" or 
 #'     "l2r"
 #' @export
 #' @return dataframe of probe information, with one row per probe
-extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, filesize, l2r_type) {
+extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start_pos, filesize, l2r_type) {
     
-    pos = find_file_pos(path, file_pos, chrom, start, filesize)
+    pos = find_file_pos(path, file_pos, chrom, start_pos, filesize)
     
     # seek to the correct part of the file
     file_con = file(path, open = "r")
@@ -170,15 +170,15 @@ extract_lines_from_file <- function(path, file_pos, lines_n, chrom, start, files
 #' 
 #' @param ddd dataframe listing sample IDs, and file paths
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
-#' @param start chromosome position that the CNV region starts at
-#' @param stop chromosome position that the CNV region ends at
+#' @param start_pos chromosome position that the CNV region starts at
+#' @param stop_pos chromosome position that the CNV region ends at
 #' @param l2r_type string indicating the type of L2R scores to load, "adm3" or 
 #'     "l2r"
 #' @param l2r_dir path to folder containing the aggregated L2R scores
 #' @export
 #' @return a dataframe containing all the data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-open_probes_data_fast <- function(ddd, chrom, start, stop, l2r_type, l2r_dir) {
+open_probes_data_fast <- function(ddd, chrom, start_pos, stop_pos, l2r_type, l2r_dir) {
     
     regions_path = file.path(l2r_dir, paste(l2r_type, "_index.chr", chrom, 
         ".txt", sep = ""))
@@ -189,8 +189,8 @@ open_probes_data_fast <- function(ddd, chrom, start, stop, l2r_type, l2r_dir) {
     header = read.table(path, header = TRUE, sep = "\t", nrows = 1)
     
     # figure out which lines of the index file correspond to the correct region
-    index = which(index_data$chrom == chrom & index_data$start <= stop & 
-        index_data$stop >= start)
+    index = which(index_data$chrom == chrom & index_data$start <= stop_pos & 
+        index_data$stop >= start_pos)
     
     # raise error, if there isn't any probe data for the CNV region
     if (length(index) == 0) { stop("no probe data for CNV") }
@@ -201,7 +201,7 @@ open_probes_data_fast <- function(ddd, chrom, start, stop, l2r_type, l2r_dir) {
     # figure out the correct place to start reading from the data file
     file_size = file.info(path)$size
     file_pos = ((start_index/nrow(index_data)) * file_size) - ncol(header) * 150
-    correct_pos = find_file_pos(path, file_pos, chrom, start, file_size)
+    correct_pos = find_file_pos(path, file_pos, chrom, start_pos, file_size)
     
     file_con = file(path, open = "r")
     prev_pos = seek(file_con, correct_pos, origin = "start")
@@ -214,8 +214,8 @@ open_probes_data_fast <- function(ddd, chrom, start, stop, l2r_type, l2r_dir) {
     
     # select the correct rows, and drop the first three columns with the chrom,
     # start and stop
-    probes = probes[probes$chrom == chrom & probes$start <= stop & 
-        probes$stop >= start, ]
+    probes = probes[probes$chrom == chrom & probes$start <= stop_pos & 
+        probes$stop >= start_pos, ]
     probes = subset(probes, select = -c(chrom, start, stop))
     
     return(probes)
@@ -226,14 +226,14 @@ open_probes_data_fast <- function(ddd, chrom, start, stop, l2r_type, l2r_dir) {
 #' 
 #' @param ddd dataframe listing sample IDs, and file paths
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
-#' @param start chromosome position that the CNV region starts at
-#' @param stop chromosome position that the CNV region ends at
+#' @param start_pos chromosome position that the CNV region starts at
+#' @param stop_pos chromosome position that the CNV region ends at
 #' @param l2r_type string indicating the type of L2R scores to load, "adm3" or 
 #'     "l2r"
 #' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
+open_probes_data_slow <- function(ddd, chrom, start_pos, stop_pos, l2r_type) {
     
     convex = ddd[!is.na(ddd$convex_path), ]
     header = c("chrom", "start", "stop", "l2r", "V5", "V6", "V7", "adm3")
@@ -245,8 +245,8 @@ open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
     names(index_data) = header
     
     # figure out which lines of the file correspond to the correct region
-    index = which(index_data$chrom == chrom & index_data$start <= stop & 
-        index_data$stop >= start)
+    index = which(index_data$chrom == chrom & index_data$start <= stop_pos & 
+        index_data$stop >= start_pos)
     
     # raise error, if there isn't any probe data for the CNV region
     if (length(index) == 0) { stop("no probe data for CNV") }
@@ -264,12 +264,12 @@ open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
         file_size = file.info(sample$convex_path)$size
         file_pos = ((start_index/nrow(index_data)) * file_size) - 5000
         
-        probes = extract_lines_from_file(sample$convex_path, file_pos, lines_n, chrom, start, file_size, l2r_type)
+        probes = extract_lines_from_file(sample$convex_path, file_pos, lines_n, chrom, start_pos, file_size, l2r_type)
         
         # select the correct rows, and drop the first three columns with the 
         # chrom, start and stop
-        probes = probes[probes$chrom == chrom & probes$start <= stop & 
-            probes$stop >= start, ]
+        probes = probes[probes$chrom == chrom & probes$start <= stop_pos & 
+            probes$stop >= start_pos, ]
         
         all_samples[[row]] = probes$score
         
@@ -288,15 +288,15 @@ open_probes_data_slow <- function(ddd, chrom, start, stop, l2r_type) {
 #' 
 #' @param ddd dataframe listing sample IDs, and file paths
 #' @param chrom chromosome of interest as string (eg '1', '2', 'X')
-#' @param start chromosome position that the CNV region starts at
-#' @param stop chromosome position that the CNV region ends at
+#' @param start_pos chromosome position that the CNV region starts at
+#' @param stop_pos chromosome position that the CNV region ends at
 #' @param l2r_type type of log2-ratio data to load (either "l2r" or "adm3")
 #' @param convex_dir path folder containing individual log2-ratio data
 #' @param l2r_dir path to folder containing aggregated log2-ratio data
 #' @export
 #' @return a dataframe containing all the L2R data for the different probes in 
 #'     the CNV region, for all the particpants in the ddd dataframe
-get_probes_data <- function(ddd, chrom, start, stop, l2r_type="adm3", 
+get_probes_data <- function(ddd, chrom, start_pos, stop_pos, l2r_type="adm3", 
     convex_dir="/lustre/scratch113/projects/ddd/users/ddd/DDD_ANALYSIS/convex/data",
     l2r_dir="/lustre/scratch113/projects/ddd/users/jm33/aggregated_convex") {
      
@@ -307,12 +307,12 @@ get_probes_data <- function(ddd, chrom, start, stop, l2r_type="adm3",
     # chromosome (using python combine_l2r_data.py), we use a faster function 
     # than having to extract data from all the separate files one by one
     if (file.exists(regions_path)) {
-        probes = open_probes_data_fast(ddd, chrom, start, stop, l2r_type, l2r_dir)
+        probes = open_probes_data_fast(ddd, chrom, start_pos, stop_pos, l2r_type, l2r_dir)
     } else {
         if (!("convex_path" %in% names(ddd))) {
            ddd = find_convex_files(ddd, convex_dir)
         }
-        probes = open_probes_data_slow(ddd, chrom, start, stop, l2r_type)
+        probes = open_probes_data_slow(ddd, chrom, start_pos, stop_pos, l2r_type)
     }
     
     return(probes)
