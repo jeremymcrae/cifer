@@ -20,7 +20,7 @@ The classify_exome_cnv() arguments are:
 * maternal_id: sample ID for the proband's mother
 * paternal_id: sample ID for the proband's father
 * chrom: chromosome that the CNV is on (eg "1", "2", ..., "X")
-* start: start nucleotide of the CNV as integer
+* start_pos: start nucleotide of the CNV as integer
 * stop_pos: stop nucleotide of the CNV as integer
 
 Optional arguments are:
@@ -29,15 +29,15 @@ Optional arguments are:
 * DATAFREEZE_DIR: path to folder containing files listing study samples, and
     their relationships.
 
-The code should be available at: https://github.com/jeremymcrae/cifer
-And can be obtained with: `git clone https://github.com/jeremymcrae/cifer.git`
+The code is available at: https://github.com/jeremymcrae/cifer, and can be 
+obtained with: `git clone https://github.com/jeremymcrae/cifer.git`
 
 ### Building the CIFER package:
 Change to the cifer directory, and start R.
 
 Load devtools and roxygen (requires R >= 3.0.1), construct the package 
-documentation, check the package contents are correct, which should complete 
-without errors, aside from a note about a non-standard python directory. 
+documentation, check the package contents are correct (which should complete 
+without errors, aside from a note about a non-standard python directory). 
 Finally, build the package:
 ```R
 library(devtools)
