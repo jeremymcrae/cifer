@@ -14,3 +14,5 @@ License: file LICENSE
 LazyData: true
 Imports:
     mixtools (>= 1.0.2)
+Suggests:
+    testthat

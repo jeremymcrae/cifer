@@ -15,6 +15,7 @@
 #' @param DATAFREEZE_DIR path to datafreeze directory containing files with family
 #'     relationships and sanger IDs
 #' @export
+#' 
 #' @return inheritance classification as a string eg "paternal_inh", "de_novo" etc
 classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom, 
     start_pos, stop_pos, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
@@ -39,6 +40,7 @@ classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom,
 #' @param samples_dir path to datafreeze directory containing files with family
 #'     relationships and sanger IDs
 #' @export
+#' 
 #' @return dataframe with sample information, including sanger IDs
 get_ddd_individuals <- function(samples_dir) {
     
@@ -62,6 +64,7 @@ get_ddd_individuals <- function(samples_dir) {
 #' @param proband l2r values for the current proband
 #' @param population l2r values for parents not in proband's family
 #' @export
+#' 
 #' @return list of z scores for population (as vector), and z scores for proband
 #'     family (as list)
 get_l2r_z_scores <- function(mother, father, proband, population) {
@@ -83,11 +86,45 @@ get_l2r_z_scores <- function(mother, father, proband, population) {
     return(z_scores)
 }
 
+#' estimate local maxima within a numeric distribution
+#' 
+#' Note that this function tends to overestimate the number of maxima in the
+#' distribution, which is compensated for by only picking the biggest of the 
+#' peaks later on.
+#' 
+#' @param z_scores numeric vector of Z-transformed log2-ratio data for parental
+#'     population
+#' @export
+#' 
+#' @return vector of maxima positions
+get_maxima <- function(z_scores) {
+    # figure out if we need a mixture model by examining the local maxima of the 
+    # density
+    dens = density(z_scores)
+    maxima = which(diff(sign(diff(dens$y))) == -2) + 1
+    
+    # exclude maxima that are simply blips, and thus do not contribute greatly,
+    # and drop out single maxima from pairs that are too close together
+    maxima = maxima[dens$y[maxima] / max(dens$y[maxima]) > 0.05]
+    if (length(maxima) > 1) {
+        close_points = diff(dens$x[maxima]) < 0.7
+        if (any(close_points)) {
+            maxima = maxima[-c(which(close_points) + 1)]
+        }
+    }
+    
+    # convert the maxima back into their original population values
+    maxima = dens$x[maxima]
+    
+    return(maxima)
+}
+
 #' get the parameters of the null distrubution
 #' 
 #' @param z_scores Z score transformed log2 ratio data for parents unrelated 
 #'     to the proband currently being classified.
 #' @export
+#' 
 #' @return a list containing the null model's mean and standard deviation, or
 #'     raises an error if generating a mixture model and the code has too 
 #'     many retries
@@ -97,19 +134,12 @@ get_null_parameters <-function(z_scores) {
     z_scores = z_scores[!is.na(z_scores)]
     
     # model the density, to figure out if we have multiple mixture models. 
-    # Figure out if we need mixture model by examining the local maxima of the 
-    # density
-    dens = density(z_scores)
-    maxima = which(diff(sign(diff(dens$y))) == -2) + 1
+    maxima = get_maxima(z_scores)
     
-    # exclude maxima that are simply blips, and thus do not contribute greatly,
-    # and drop out single maxima from pairs that are too close together
-    maxima = maxima[dens$y[maxima] / max(dens$y[maxima]) > 0.05]
-    if (length(maxima) > 1) {
-        maxima = maxima[-c(which(diff(maxima) < 0.7) + 1)]
-    }
-    
-    # if there is only one peak, then we can simply assume that the
+    # if there is only one maxima, then the vast majority of the parental 
+    # population is tightly and normally distributed around a single mode, and 
+    # the population mean and sd are good estimates for the parameters of the 
+    # mode.
     if (length(maxima) == 1) {
         null_mean = mean(z_scores)
         null_sd = sd(z_scores)
@@ -186,6 +216,10 @@ predict_inheritance <- function(z_scores) {
 #'     "uncertain" if it is unclear whether the p-value belongs to the null 
 #'     distribution or not. 
 categorize_p_value <- function(p_value, null_cutoff=0.005, uncertain_cutoff=0.0001) {
+    
+    # warn if the null and uncertain cutoff have been modified, and are 
+    # inconsistent
+    stopifnot(null_cutoff > uncertain_cutoff)
     
     # figure out the parents CNV null model status
     category = "reject"
