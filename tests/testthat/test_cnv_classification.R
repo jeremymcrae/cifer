@@ -148,7 +148,7 @@ test_that("predict_inheritance is correct", {
     z_scores$dad = NA
     expect_identical(predict_inheritance(z_scores)$inheritance, "uncertain")
     
-    # check correctness when both parents are NA, and the proband's valie lies 
+    # check correctness when both parents are NA, and the proband's value lies 
     # within the null distribution
     z_scores$proband = 0
     expect_identical(predict_inheritance(z_scores)$inheritance, "false_positive")
@@ -158,8 +158,8 @@ test_that("categorise_p_value is correct", {
     
     # check the threshold boundaries of the p-value categorisation
     expect_identical(categorize_p_value(0.000099), "reject")
-    expect_identical(categorize_p_value(0.0001), "reject")
-    expect_identical(categorize_p_value(0.00011), "uncertain")
+    expect_identical(categorize_p_value(0.0005), "reject")
+    expect_identical(categorize_p_value(0.00051), "uncertain")
     expect_identical(categorize_p_value(0.00499), "uncertain")
     expect_identical(categorize_p_value(0.005), "uncertain")
     expect_identical(categorize_p_value(0.0051), "null")

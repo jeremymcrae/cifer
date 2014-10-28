@@ -73,7 +73,11 @@ get_ddd_individuals <- function(samples_dir) {
 #' get_l2r_z_scores(c(1,2), c(0,3), c(3,3), data.frame(a=c(0.5, 0.1), b=c(0.3, 0.2)))
 get_l2r_z_scores <- function(mother, father, proband, population) {
     # determine the log2 ratio population distribution
-    population_l2r = colMeans(population, na.rm = TRUE)
+    if(is.null(dim(population))) {
+        population_l2r = population
+    } else {
+        population_l2r = colMeans(population, na.rm = TRUE)
+    }
     pop_mean = mean(population_l2r, na.rm=TRUE)
     pop_sd = sd(population_l2r, na.rm=TRUE)
     
@@ -233,7 +237,7 @@ predict_inheritance <- function(z_scores) {
 #' categorize_p_value(0.1)
 #' categorize_p_value(NA)
 #' categorize_p_value(0.001, uncertain_cutoff=0.002)
-categorize_p_value <- function(p_value, null_cutoff=0.005, uncertain_cutoff=0.0001) {
+categorize_p_value <- function(p_value, null_cutoff=0.005, uncertain_cutoff=0.0005) {
     
     # warn if the null and uncertain cutoff have been modified, and are 
     # inconsistent

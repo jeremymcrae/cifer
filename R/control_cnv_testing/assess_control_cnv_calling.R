@@ -251,8 +251,6 @@ main <- function() {
     
     # get different CNV subsets
     certain_cnvs = get_certain_cnvs(cnvs)
-    rare_cnvs = cnvs[cnvs$rare == 1, ]
-    common_cnvs = cnvs[cnvs$rare == 0, ]
     
     # analyse how well the inheritance states match between the VICAR calls, and
     # the exome-based calls

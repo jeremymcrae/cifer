@@ -51,7 +51,8 @@ library(roxygen)
 document()
 
 # check the package contents are correct (which should complete without errors, 
-# aside from a note about a non-standard python directory). 
+# aside from a note about a non-standard python directory). This also runs the
+# unit tests found in the tests folder, which should complete without error.
 check()
 
 # Finally, build the package:
