@@ -24,15 +24,21 @@ def get_options():
     
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--chrom", dest="chrom", help="chromosome to examine")
-    group.add_argument("--all-chroms", dest="all_chroms", action="store_true", default=False, help="whether to process all the chromosomes")
+    group.add_argument("--all-chroms", dest="all_chroms", action="store_true", \
+        default=False, help="whether to process all the chromosomes")
     
-    parser.add_argument("--dir", dest="outdir", default=EXPORT_DIR, help="folder for exporting the datafiles, default = " + EXPORT_DIR)
-    parser.add_argument("--type", dest="l2r_type", choices=["adm3", "l2r"], default="adm3", help="whether to extract ADM3 or L2R scores")
-    parser.add_argument("--datafreeze", dest="datafreeze_dir", default=DATAFREEZE_DIR, help="directory containing participant info files, in particular \"person_sanger_decipher.private.txt\", default = " + DATAFREEZE_DIR)
-    parser.add_argument("--l2r-dir", dest="l2r_dir", default=L2R_DIR, help="directory containing L2R datafiles, default = " + L2R_DIR)
+    parser.add_argument("--dir", dest="outdir", default=EXPORT_DIR, \
+        help="folder for exporting the datafiles, default = {0}".format(EXPORT_DIR))
+    parser.add_argument("--type", dest="l2r_type", choices=["adm3", "l2r"], \
+        default="adm3", help="whether to extract ADM3 or L2R scores")
+    parser.add_argument("--datafreeze", dest="datafreeze_dir", \
+        default=DATAFREEZE_DIR, \
+        help="directory containing participant info files, in particular" + \
+        " \"person_sanger_decipher.private.txt\", default = {0}".format(DATAFREEZE_DIR))
+    parser.add_argument("--l2r-dir", dest="l2r_dir", default=L2R_DIR, \
+        help="directory containing L2R datafiles, default = {0}".format(L2R_DIR))
     
     args = parser.parse_args()
-    
     
     return args.chrom, args.outdir, args.all_chroms, args.datafreeze_dir, \
         args.l2r_dir, args.l2r_type
@@ -108,12 +114,15 @@ def get_l2r_paths(l2r_dir, sanger_ids):
         for alt_id in alt_ids:
             basename = "ProbeRD_{0}_LR2_GAM.dat".format(alt_id)
             path = os.path.join(l2r_dir, basename)
+            # print(path)
             
             if os.path.exists(path):
                 file_names[person_id] = {}
                 file_names[person_id]["path"] = path
                 file_names[person_id]["filesize"] = os.path.getsize(path)
                 break
+    
+    print(file_names)
     
     return file_names
 

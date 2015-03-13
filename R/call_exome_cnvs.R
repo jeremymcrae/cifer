@@ -24,7 +24,7 @@ classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom,
     probes = try(get_probes_data(ddd, chrom, start_pos, stop_pos), silent = TRUE)
     
     # set the default return values, in case loading probe data gave an error
-    prediction = list(inheritance = "no_probe_data_for_CNV_region", mom_value=NA, dad_value=NA)
+    prediction = list(inheritance="no_probe_data_for_CNV_region", mom_value=NA, dad_value=NA)
     
     # if we have loaded some probe scores, then try to predict inheritance
     if (class(probes) != "try-error") {
@@ -321,7 +321,7 @@ process_cnv_call <- function(ddd, probes, proband_id, maternal_id, paternal_id, 
     }
     
     # get a correctly ordered dataframe of parental L2R values
-    parent_set = subset(probes, select = parent_ids)
+    parent_set = subset(probes, select=parent_ids)
     
     # find the Z scores for the population, and the family of interest
     z_scores = get_l2r_z_scores(probes[[maternal_id]], probes[[paternal_id]], 
