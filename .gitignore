@@ -1,7 +1,5 @@
 *.pdf
 *.gz
-*.Rd
 *.RData
 results/
 data/
-man/
