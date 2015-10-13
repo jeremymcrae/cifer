@@ -178,19 +178,19 @@ test_that("categorise_p_value is correct", {
 test_that("classify_inheritance output is correct", {
     
     # check the different inheritance classifications, given the trio p-values
-    expect_identical(classify_inheritance(0.1, 0.1, 0.00001), "not_inherited")
-    expect_identical(classify_inheritance(0.1, 0.1, 0.001), "uncertain")
-    expect_identical(classify_inheritance(0.1, 0.1, 0.1), "false_positive")
+    expect_identical(classify_from_trio_p_values(0.1, 0.1, 0.00001), "not_inherited")
+    expect_identical(classify_from_trio_p_values(0.1, 0.1, 0.001), "uncertain")
+    expect_identical(classify_from_trio_p_values(0.1, 0.1, 0.1), "false_positive")
     
     # check the different uncertain categories
-    expect_identical(classify_inheritance(0.001, 0.1, 0.0001), "uncertain")
-    expect_identical(classify_inheritance(0.1, 0.001, 0.0001), "uncertain")
-    expect_identical(classify_inheritance(0.001, 0.001, 0.0001), "uncertain")
+    expect_identical(classify_from_trio_p_values(0.001, 0.1, 0.0001), "uncertain")
+    expect_identical(classify_from_trio_p_values(0.1, 0.001, 0.0001), "uncertain")
+    expect_identical(classify_from_trio_p_values(0.001, 0.001, 0.0001), "uncertain")
     
     # check the different inheritance categories
-    expect_identical(classify_inheritance(0.0001, 0.001, 0.0001), "maternal_inh")
-    expect_identical(classify_inheritance(0.0001, 0.01, 0.0001), "maternal_inh")
-    expect_identical(classify_inheritance(0.001, 0.0001, 0.0001), "paternal_inh")
-    expect_identical(classify_inheritance(0.01, 0.0001, 0.0001), "paternal_inh")
-    expect_identical(classify_inheritance(0.0001, 0.0001, 0.0001), "biparental_inh")
+    expect_identical(classify_from_trio_p_values(0.0001, 0.001, 0.0001), "maternal_inh")
+    expect_identical(classify_from_trio_p_values(0.0001, 0.01, 0.0001), "maternal_inh")
+    expect_identical(classify_from_trio_p_values(0.001, 0.0001, 0.0001), "paternal_inh")
+    expect_identical(classify_from_trio_p_values(0.01, 0.0001, 0.0001), "paternal_inh")
+    expect_identical(classify_from_trio_p_values(0.0001, 0.0001, 0.0001), "biparental_inh")
 })

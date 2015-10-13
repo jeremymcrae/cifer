@@ -2,12 +2,10 @@
 
 export(categorize_p_value)
 export(chrom_num)
-export(classify_exome_cnv)
-export(classify_inheritance)
+export(classify_from_trio_p_values)
 export(extract_lines_from_file)
 export(find_convex_files)
 export(find_file_pos)
-export(get_ddd_individuals)
 export(get_l2r_z_scores)
 export(get_maxima)
 export(get_null_parameters)

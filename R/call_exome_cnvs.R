@@ -1,62 +1,6 @@
 # find the inheritance status for CNVs called by CONVEX from exome data
 #
 
-#' function to classify single CNV based on sample IDs, and CNV coordinates
-#'
-#' @param proband_id sample ID for the proband (eg DDDP100001)
-#' @param maternal_id sample ID for the proband's mother
-#' @param paternal_id sample ID for the proband's father
-#' @param chrom chromosome that the CNV is on (eg "1", "2", ..., "X")
-#' @param start_pos start nucleotide of the CNV
-#' @param stop_pos stop nucleotide of the CNV
-#' @param cnv one row dataframe that contains the details of the CNV. Optional,
-#'     only used if we need to plot the CNV, when we need to note any
-#'     existing inheritance classification.
-#' @param DATAFREEZE_DIR path to datafreeze directory containing files with family
-#'     relationships and sanger IDs
-#' @export
-#'
-#' @return inheritance classification as a string eg "paternal_inh", "de_novo" etc
-classify_exome_cnv <- function(proband_id, maternal_id, paternal_id, chrom,
-    start_pos, stop_pos, cnv=NA, DATAFREEZE_DIR="/nfs/ddd0/Data/datafreeze/1133trios_20131218") {
-    
-    samples = get_ddd_individuals(DATAFREEZE_DIR)
-    probes = try(get_probes_data(samples, chrom, start_pos, stop_pos), silent = TRUE)
-    
-    # set the default return values, in case loading probe data gave an error
-    prediction = list(inheritance="no_probe_data_for_CNV_region", mom_value=NA, dad_value=NA)
-    
-    # if we have loaded some probe scores, then try to predict inheritance
-    if (class(probes) != "try-error") {
-        prediction = process_cnv_call(samples, probes, proband_id, maternal_id, paternal_id, cnv)
-    }
-    
-    return(prediction)
-}
-
-#' get a list of DDD participants, with their family relationships, and
-#' sanger sample IDs
-#'
-#' @param samples_dir path to datafreeze directory containing files with family
-#'     relationships and sanger IDs
-#' @export
-#'
-#' @return dataframe with sample information, including sanger IDs
-get_ddd_individuals <- function(samples_dir) {
-    
-    families_path = file.path(samples_dir, "family_relationships.shared.txt")
-    families = read.table(families_path, sep = "\t", header = TRUE, stringsAsFactors=FALSE)
-    
-    sanger_ids_path = file.path(samples_dir, "person_sanger_decipher.private.txt")
-    sanger_ids = read.table(sanger_ids_path, sep = "\t", header = TRUE, stringsAsFactors=FALSE)
-    
-    samples = merge(families, sanger_ids, by.x = "individual_id", by.y =
-        "stable_id", all.x = TRUE)
-    samples$is_proband = samples$dad_id != 0
-    
-    return(samples)
-}
-
 #' get Z transformed L2R scores in the population, and in the proband family
 #'
 #' @param family list of l2r values for the current trio, ie values for mother,
@@ -146,7 +90,7 @@ get_maxima <- function(z_scores) {
 #' @examples
 #' get_null_parameters(rnorm(100, mean=0, sd=1))
 #' get_null_parameters(c(rnorm(100, mean=0, sd=1), rnorm(30, mean=5, sd=1)))
-get_null_parameters <-function(z_scores) {
+get_null_parameters <- function(z_scores) {
     
     z_scores = z_scores[!is.na(z_scores)]
     
@@ -166,7 +110,7 @@ get_null_parameters <-function(z_scores) {
         # Note that this occurs when the blips are prevalent enough to affect
         # fitting a normal distribution, ie has local maxima greater than 5% of
         # the peak maxima.
-        l2r_model = mixtools::normalmixEM(z_scores, k = length(maxima), maxrestarts = 50)
+        l2r_model = mixtools::normalmixEM(z_scores, k=length(maxima), maxrestarts=50)
         
         # use the model closest to 0 as the null distribution, or could use the
         # model that forms the greatest proportion of the population
@@ -176,7 +120,7 @@ get_null_parameters <-function(z_scores) {
         null_sd = l2r_model$sigma[null_pos]
     }
     
-    parameters = list(null_mean = null_mean, null_sd = null_sd)
+    parameters = list("null_mean"=null_mean, "null_sd"=null_sd)
     
     return(parameters)
 }
@@ -222,7 +166,7 @@ predict_inheritance <- function(population, family) {
     child_z = (family$child - null_mean)/null_sd
     child_value = 2 * pnorm(-abs(child_z))
     
-    inheritance = classify_inheritance(mom_value, dad_value, child_value)
+    inheritance = classify_from_trio_p_values(mom_value, dad_value, child_value)
     family = list("mom_value"=mom_value, "dad_value"=dad_value,
         "proband_value"=child_value, "proband_z_score"=child_z)
     values = list("inheritance"=inheritance, "family"=family)
@@ -276,11 +220,11 @@ categorize_p_value <- function(p_value, null_cutoff=0.005, uncertain_cutoff=0.00
 #'         "paternal_inh" etc)
 #'
 #' @examples
-#' mom = 0.1
-#' dad = 0.1
-#' child = 0.0001
-#' classify_inheritance(mom, dad, child)
-classify_inheritance <- function(mom_p_value, dad_p_value, proband_p_value) {
+#' mom_p = 0.1
+#' dad_p = 0.1
+#' child_p = 0.0001
+#' classify_from_trio_p_values(mom_p, dad_p, child_p)
+classify_from_trio_p_values <- function(mom_p_value, dad_p_value, proband_p_value) {
     
     # categorise the trio members as "null", "uncertain" or "reject"
     mom = categorize_p_value(mom_p_value)
@@ -378,8 +322,8 @@ process_cnv_call <- function(samples, probes, child_id, mom_id, dad_id, cnv=NA) 
     # predict the inheritance state of the childs CNV
     prediction = predict_inheritance(population, family)
     
-    if (!is.na(cnv)) { include_graphs(samples, probes, z_scores, child_id, mom_id,
-            dad_id, cnv)
+    if (!is.na(cnv)) {
+        include_graphs(samples, probes, z_scores, child_id, mom_id, dad_id, cnv)
     }
     
     return(prediction)
