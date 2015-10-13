@@ -9,58 +9,57 @@ a model constructed from the log2-ratio scores in a population of unrelated
 trios (specifically, the parents of those trios).
 
 This package determines the parameters of the null model, and estimates the
-probability that each parent's log-2 ratio data belongs to the null model. The 
+probability that each parent's log-2 ratio data belongs to the null model. The
 estimated probabilities are used to assign both parents into inheritance
 categories, which are then used to assign an inheritance state for the proband.
 
-### Predicting inheritance:
+The code is available at: https://github.com/jeremymcrae/cifer, and can be
+obtained with: `git clone https://github.com/jeremymcrae/cifer.git`
+
+### Installation
+The package can be installed or updated using R 3.1.0 or greater with:
+```R
+library(devtools) # if necessary install with install.packages("devtools")
+devtools::install_github("jeremymcrae/cifer")
+
+# Alternatively, clone the repository, run R 3.1 from within the top level of
+# the repository and use the devtools::build() to build the package for other R
+# versions.
+```
+
+### Predicting inheritance
 Using the installed package should involve loading the library and calling the
-classification function:
+classification function. Here's a somewhat artificial example:
 ```R
 library(cifer)
-prediction <- classify_exome_cnv(proband_id, maternal_id, paternal_id, chrom, start_pos, stop_pos)
+
+# define a cohort of 500 individuals
+cohort_n <- 500
+sample_ids <- paste("sample", 1:cohort_n, sep="_")
+
+# define the sample IDs for the cohort, and whether those individuals are
+# probands (since we determine the null distribution only from parents).
+samples <- data.frame("individual_id"=sample_ids,
+    "is_proband"=c(rep(FALSE, length(sample_ids) - 1), TRUE))
+
+# define the population as having probes values cenetred around zero
+probes <- data.frame(matrix(rnorm(length(sample_ids) * 5), nrow=5))
+names(probes) <- sample_ids
+
+# set the child probe values to distant from the population values
+probes[sample_ids[length(sample_ids)]] <- rnorm(5, mean=10, sd=1)
+
+# define the sample IDs for the trio members
+child_id <- sample_ids[length(sample_ids)]
+mom_id <- sample_ids[1]
+dad_id <- sample_ids[2]
+
+# classify the inheritance state of this CNV call
+inheritance <- process_cnv_call(samples, probes, child_id, mom_id, dad_id)
 
 # access the inheritance prediction
 inheritance <- prediction$inheritance
 ```
 
-The classify_exome_cnv() arguments are:
-* proband_id: sample ID for the proband (eg "DDDP100001")
-* maternal_id: sample ID for the proband's mother
-* paternal_id: sample ID for the proband's father
-* chrom: chromosome that the CNV is on (eg "1", "2", ..., "X")
-* start_pos: start nucleotide of the CNV as integer
-* stop_pos: stop nucleotide of the CNV as integer
-
-Optional arguments are:
-* cnv: dataframe of CNV info, not necessary for predicting inheritance, used
-    for evaluating CNVs if we plot the population distribution.
-* DATAFREEZE_DIR: path to folder containing files listing study samples, and
-    their relationships.
-
-The code is available at: https://github.com/jeremymcrae/cifer, and can be
-obtained with: `git clone https://github.com/jeremymcrae/cifer.git`
-
-### Building the CIFER package:
-Change to the cifer directory, and start R.
-
-Load devtools and roxygen (requires R >= 3.0.1), then build a cifer.tar.gz
-package, which can be installed locally.
-```R
-library(devtools)
-library(roxygen)
-
-# construct the package documentation
-document()
-
-# check the package contents are correct (which should complete without errors,
-# aside from a note about a non-standard python directory). This also runs the
-# unit tests found in the tests folder, which should complete without error.
-check()
-
-# Finally, build the package:
-build()
-
-# optionally install the package from source, rather than from the built package
-install()
-```
+It's up to you to load the probe data for your CNV call, and to define your
+cohort sample IDs and trio IDs for the proband being analysed.
