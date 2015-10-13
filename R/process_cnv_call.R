@@ -38,6 +38,26 @@
 #' mom_id = "J"
 #' dad_id = "I"
 #' process_cnv_call(samples, probes, child_id, mom_id, dad_id)
+#'
+#' # run another example, this time with a larger dataset
+#' cohort_n = 500
+#' sample_ids = paste("sample", 1:cohort_n, sep="_")
+#' samples = data.frame("individual_id"=sample_ids,
+#'     "is_proband"=c(rep(FALSE, length(sample_ids) - 1), TRUE))
+#'
+#' # define the population as having probes values cenetred around zero
+#' probes = data.frame(matrix(rnorm(length(sample_ids) * 5), nrow=5))
+#' names(probes) = sample_ids
+#'
+#' # set the child probe values to distant from the population values
+#' probes[sample_ids[length(sample_ids)]] = rnorm(5, mean=10, sd=1)
+#'
+#' # define the sample IDs for the trio members
+#' child_id = sample_ids[length(sample_ids)]
+#' mom_id = sample_ids[1]
+#' dad_id = sample_ids[2]
+#'
+#' process_cnv_call(samples, probes, child_id, mom_id, dad_id)
 process_cnv_call <- function(samples, probes, child_id, mom_id, dad_id, cnv=NA) {
     
     # make sure all the parents are included in the probe dataset, so that we
