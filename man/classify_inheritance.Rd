@@ -2,7 +2,7 @@
 % Please edit documentation in R/call_exome_cnvs.R
 \name{classify_inheritance}
 \alias{classify_inheritance}
-\title{classify the inheritance state of the childs CNV call}
+\title{classify the inheritance state of the child's CNV call}
 \usage{
 classify_inheritance(mom_p_value, dad_p_value, proband_p_value)
 }
@@ -15,9 +15,15 @@ classify_inheritance(mom_p_value, dad_p_value, proband_p_value)
 }
 \value{
 inheritance classification for the CNV eg("de_novo", "uncertain",
-    "paternal_inh" etc)
+        "paternal_inh" etc)
 }
 \description{
-classify the inheritance state of the childs CNV call
+classify the inheritance state of the child's CNV call
+}
+\examples{
+mom = 0.1
+dad = 0.1
+child = 0.0001
+classify_inheritance(mom, dad, child)
 }
 

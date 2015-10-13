@@ -2,14 +2,14 @@
 % Please edit documentation in R/call_exome_cnvs.R
 \name{predict_inheritance}
 \alias{predict_inheritance}
-\title{quantify the probability that the parental CNVs belong to the null
-(uninherited) distribution}
+\title{predict the inheritance of a child's CNV from population and family scores}
 \usage{
-predict_inheritance(z_scores)
+predict_inheritance(population, family)
 }
 \arguments{
-\item{z_scores}{list of Z scores of L2R for the parental population, and
-Z scores for the mother, father and current proband}
+\item{population}{vector of Z scores of L2R for the parental population}
+
+\item{family}{list of Z scores for "mom", "dad" and "child"}
 }
 \value{
 list of inheritance classification, and P values for the mother and
@@ -17,7 +17,15 @@ list of inheritance classification, and P values for the mother and
     to the uninherited cluster.
 }
 \description{
-quantify the probability that the parental CNVs belong to the null
-(uninherited) distribution
+predict the inheritance of a child's CNV from population and family scores
+}
+\examples{
+family = list("mom"=0, "dad"=0, "child"=5)
+population = rnorm(100)
+predict_inheritance(population, family)
+
+family = list("mom"=NA, "dad"=NA, "child"=1)
+population = rnorm(100)
+predict_inheritance(population, family)
 }
 

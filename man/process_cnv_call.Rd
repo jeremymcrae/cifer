@@ -4,27 +4,54 @@
 \alias{process_cnv_call}
 \title{predict the inheritance state of the CNV call}
 \usage{
-process_cnv_call(ddd, probes, proband_id, maternal_id, paternal_id, cnv = NA)
+process_cnv_call(samples, probes, child_id, mom_id, dad_id, cnv = NA)
 }
 \arguments{
-\item{ddd}{dataframe listing sample IDs, and file paths}
+\item{samples}{dataframe listing sample IDs, and file paths}
 
-\item{probes}{dataframe of log-2-ratio (or adm3 score) values for all DDD
+\item{probes}{dataframe of log-2-ratio (or adm3 score) values for all
 participants, for the exome probes that lie within the CNV region.}
 
-\item{proband_id}{ID of the proband}
+\item{child_id}{ID of the proband}
 
-\item{maternal_id}{DDD ID for the proband's mother}
+\item{mom_id}{sample ID for the proband's mother}
 
-\item{paternal_id}{DDD ID for the proband's father}
+\item{dad_id}{sample ID for the proband's father}
 
 \item{cnv}{row information for CNV}
 }
 \value{
 list of inheritance classification, the mother's p-value and the
-    father's p-value.
+       father's p-value.
 }
 \description{
 predict the inheritance state of the CNV call
+}
+\examples{
+samples = read.table(header=TRUE, text="
+       individual_id is_proband
+       A             FALSE
+       B             FALSE
+       C             FALSE
+       D             FALSE
+       E             TRUE
+       F             FALSE
+       G             FALSE
+       H             FALSE
+       I             FALSE
+       J             FALSE
+       K             TRUE
+       L             FALSE",
+       colClasses=c("character", "logical"))
+probes = read.table(header=TRUE, text="
+       probe A B C D E F G H I J K
+       p1    5 6 4 5 5 6 5 5 4 6 9
+       p2    5 6 4 5 5 6 5 5 4 6 9
+       p3    5 6 4 5 5 6 5 5 4 6 9
+       p4    5 6 4 5 5 6 5 5 4 6 9")
+child_id = "K"
+mom_id = "J"
+dad_id = "I"
+process_cnv_call(samples, probes, child_id, mom_id, dad_id)
 }
 

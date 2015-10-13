@@ -4,27 +4,24 @@
 \alias{get_l2r_z_scores}
 \title{get Z transformed L2R scores in the population, and in the proband family}
 \usage{
-get_l2r_z_scores(mother, father, proband, population)
+get_l2r_z_scores(family, population)
 }
 \arguments{
-\item{mother}{l2r values for the mother of the current proband, or NULL if
-the mother is not present}
-
-\item{father}{l2r values for the father of the current proband, or NULL if
-the father is not present}
-
-\item{proband}{l2r values for the current proband}
+\item{family}{list of l2r values for the current trio, ie values for mother,
+father and child. The parent values should be NULL if the parents do not
+have data available.}
 
 \item{population}{l2r values for parents not in proband's family}
 }
 \value{
-list of z scores for population (as vector), and z scores for proband
-    family (as list)
+list of population Z scores (as vector), and family Z scores (as list)
 }
 \description{
 get Z transformed L2R scores in the population, and in the proband family
 }
 \examples{
-get_l2r_z_scores(c(1,2), c(0,3), c(3,3), data.frame(a=c(0.5, 0.1), b=c(0.3, 0.2)))
+family = list("mom"=c(1,2), "dad"=c(0,3), "child"=c(3,3))
+population = data.frame(a=c(0.5, 0.1), b=c(0.3, 0.2))
+get_l2r_z_scores(family, population)
 }
 
