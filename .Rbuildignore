@@ -1,5 +1,7 @@
 control_data$
 results$
+scripts$
 .*.pdf
 .*.gz
 .*.txt
+.travis.yml
