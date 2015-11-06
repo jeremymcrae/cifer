@@ -16,7 +16,16 @@
 #' family = list("mom"=NA, "dad"=NA, "child"=1)
 #' population = rnorm(100)
 #' predict_inheritance(population, family)
-predict_inheritance <- function(population, family) {
+#' z_scores = list("population"=population, "mom"=NA, "dad"=NA, "child"=1)
+#'  predict_inheritance(z_scores)
+predict_inheritance <- function(population, family=NULL) {
+    
+    # Previously the function allowed putting all the variables in a single list
+    # variable, extract out the population and family data if this is the case.
+    if ("population" %in% names(population) & is.null(family)) {
+        family = population
+        population = population$population
+    }
     
     parameters = try(get_null_parameters(population), silent=TRUE)
     
@@ -24,7 +33,8 @@ predict_inheritance <- function(population, family) {
     # and raises an error, we capture those errors, and simply return a
     # invalid classification.
     if (class(parameters) == "try-error") {
-        return(list(inheritance = "unable_to_evaluate_probes", mom_value=NA, dad_value=NA))
+        return(list("inheritance"="unable_to_evaluate_probes", "mom_value"=NA,
+            "dad_value"=NA, "proband_value"=NA, "proband_z_score"=NA))
     }
     
     null_mean = parameters$null_mean

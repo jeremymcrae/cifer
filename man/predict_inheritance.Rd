@@ -4,7 +4,7 @@
 \alias{predict_inheritance}
 \title{predict the inheritance of a child's CNV from population and family scores}
 \usage{
-predict_inheritance(population, family)
+predict_inheritance(population, family = NULL)
 }
 \arguments{
 \item{population}{vector of Z scores of L2R for the parental population}
@@ -27,5 +27,7 @@ predict_inheritance(population, family)
 family = list("mom"=NA, "dad"=NA, "child"=1)
 population = rnorm(100)
 predict_inheritance(population, family)
+z_scores = list("population"=population, "mom"=NA, "dad"=NA, "child"=1)
+ predict_inheritance(z_scores)
 }
 
