@@ -72,15 +72,12 @@ process_cnv_call <- function(samples, probes, child_id, mom_id, dad_id, cnv=NA) 
         probes[[parent]] = NA
     }
     
-    family = list("mom"=probes[[mom_id]], "dad"=probes[[dad_id]], "child"=probes[[child_id]])
-    
     # find the Z scores for the population, and the family of interest
-    z_scores = get_l2r_z_scores(family, probes[, parent_ids])
-    population = z_scores$population
-    family = z_scores$family
+    z_scores = get_l2r_z_scores(probes[[mom_id]], probes[[dad_id]],
+        probes[[child_id]], probes[, parent_ids])
     
     # predict the inheritance state of the childs CNV
-    prediction = predict_inheritance(population, family)
+    prediction = predict_inheritance(z_scores)
     
     if (!is.na(cnv)) {
         include_graphs(samples, probes, z_scores, child_id, mom_id, dad_id, cnv)
