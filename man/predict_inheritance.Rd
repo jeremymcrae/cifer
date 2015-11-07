@@ -28,6 +28,6 @@ family = list("mom"=NA, "dad"=NA, "child"=1)
 population = rnorm(100)
 predict_inheritance(population, family)
 z_scores = list("population"=population, "mom"=NA, "dad"=NA, "child"=1)
- predict_inheritance(z_scores)
+predict_inheritance(z_scores)
 }
 

@@ -17,7 +17,7 @@
 #' population = rnorm(100)
 #' predict_inheritance(population, family)
 #' z_scores = list("population"=population, "mom"=NA, "dad"=NA, "child"=1)
-#'  predict_inheritance(z_scores)
+#' predict_inheritance(z_scores)
 predict_inheritance <- function(population, family=NULL) {
     
     # Previously the function allowed putting all the variables in a single list
