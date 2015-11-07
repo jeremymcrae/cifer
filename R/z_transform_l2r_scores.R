@@ -13,7 +13,7 @@
 #' get_l2r_z_scores(mom_data=c(1,2), dad_data=c(0,3), child_data=c(3,3), population)
 get_l2r_z_scores <- function(mom_data, dad_data, child_data, population) {
     # determine the log2 ratio population distribution
-    if(is.null(dim(population))) {
+    if (is.null(dim(population))) {
         population_l2r = population
     } else {
         population_l2r = colMeans(population, na.rm = TRUE)
@@ -28,9 +28,9 @@ get_l2r_z_scores <- function(mom_data, dad_data, child_data, population) {
     dad = NA
     # make sure the parents data exists (they might not be present in the
     # population) before trying to Z transform
-    if (!is.null(mom_data)) {mom = (mean(mom_data, na.rm=TRUE) - pop_mean)/pop_sd}
-    if (!is.null(dad_data)) {dad = (mean(dad_data, na.rm=TRUE) - pop_mean)/pop_sd}
-    child = (mean(child_data, na.rm=TRUE) - pop_mean)/pop_sd
+    if (!is.null(mom_data)) {mom = (mean(unlist(mom_data), na.rm=TRUE) - pop_mean)/pop_sd}
+    if (!is.null(dad_data)) {dad = (mean(unlist(dad_data), na.rm=TRUE) - pop_mean)/pop_sd}
+    child = (mean(unlist(child_data), na.rm=TRUE) - pop_mean)/pop_sd
     
     z_scores = list("population"=population, "mom"=mom, "dad"=dad, "child"=child)
     
