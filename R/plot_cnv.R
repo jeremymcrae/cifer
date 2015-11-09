@@ -1,12 +1,12 @@
 
-#' set up the data for plotting a graph, then call the plotting function
+#' plot the density of Z-scores from the population and trio
 #'
 #' @param z_scores list of Z scores for unrelated parents, and Z scores for
 #'      members of the current trio
 #' @param cnv one row dataframe that contains the CNV's details (used to
 #'         identify the plot)
 #' @export
-plot_graph <- function(z_scores, cnv) {
+plot_cnv <- function(z_scores, cnv) {
     
     # set the title of the plot (useful for when we include multiple plots in
     # a single file)

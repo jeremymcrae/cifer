@@ -80,7 +80,7 @@ process_cnv_call <- function(samples, probes, child_id, mom_id, dad_id, cnv=NA) 
     # predict the inheritance state of the childs CNV
     prediction = predict_inheritance(z_scores)
     
-    if (!is.na(cnv)) { plot_graph(z_scores, cnv) }
+    if (!is.na(cnv)) { plot_cnv(z_scores, cnv) }
     
     return(prediction)
 }
