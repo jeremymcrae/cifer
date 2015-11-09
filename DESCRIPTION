@@ -1,5 +1,5 @@
 Package: cifer
-Title: CNV inheritance from exome read-depths
+Title: CNV Inheritance from Exome Read-Depths
 Version: 0.3.0
 Authors@R: person(given="Jeremy", family="McRae",
     email="jeremy.mcrae@sanger.ac.uk", role=c("aut", "cre"))

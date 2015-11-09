@@ -18,7 +18,8 @@ participants, for the exome probes that lie within the CNV region.}
 
 \item{dad_id}{sample ID for the proband's father}
 
-\item{cnv}{row information for CNV}
+\item{cnv}{row information for CNV, include this if you want to plot the
+underlying data for the inheritance prediction}
 }
 \value{
 list of inheritance classification, the mother's p-value and the

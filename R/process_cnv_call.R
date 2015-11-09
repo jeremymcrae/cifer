@@ -6,7 +6,8 @@
 #' @param child_id ID of the proband
 #' @param mom_id sample ID for the proband's mother
 #' @param dad_id sample ID for the proband's father
-#' @param cnv row information for CNV
+#' @param cnv row information for CNV, include this if you want to plot the
+#'        underlying data for the inheritance prediction
 #' @export
 #'
 #' @return list of inheritance classification, the mother's p-value and the
@@ -79,9 +80,7 @@ process_cnv_call <- function(samples, probes, child_id, mom_id, dad_id, cnv=NA) 
     # predict the inheritance state of the childs CNV
     prediction = predict_inheritance(z_scores)
     
-    if (!is.na(cnv)) {
-        include_graphs(samples, probes, z_scores, child_id, mom_id, dad_id, cnv)
-    }
+    if (!is.na(cnv)) { plot_graph(z_scores, cnv) }
     
     return(prediction)
 }
