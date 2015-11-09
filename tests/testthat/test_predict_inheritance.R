@@ -84,3 +84,10 @@ test_that("predict_inheritance is correct for both parents NA and child in null"
     
     expect_identical(predict_inheritance(population, family)$inheritance, "false_positive")
 })
+
+test_that("predict_inheritance is correct when passing in single z_score list", {
+    population = rnorm(500, mean=0, sd=1)
+    z_scores = list("population"=population, "mom"=10, "dad"=0, "child"=10)
+    
+    expect_identical(predict_inheritance(z_scores)$inheritance, "maternal_inh")
+})
