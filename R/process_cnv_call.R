@@ -63,6 +63,7 @@ process_cnv_call <- function(samples, probes, child_id, mom_id, dad_id, cnv=NA) 
     
     # make sure all the parents are included in the probe dataset, so that we
     # can order the parental z scores and correlations correctly.
+    samples$individual_id = as.character(samples$individual_id)
     parent_ids = unique(samples[!samples$is_proband, ]$individual_id)
     
     # drop out the parents for the current child, so we can be sure the population
