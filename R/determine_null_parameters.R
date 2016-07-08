@@ -23,7 +23,7 @@ get_null_parameters <- function(z_scores) {
     # mode.
     if (length(maxima) == 1) {
         null_mean = mean(z_scores)
-        null_sd = sd(z_scores)
+        null_sd = stats::sd(z_scores)
     } else {
         # use a mixture distribution with > two local maxima, as this will allow
         # for non-rare CNVs that might be distributed differently from the null.
@@ -62,7 +62,7 @@ get_null_parameters <- function(z_scores) {
 get_maxima <- function(z_scores) {
     # figure out if we need a mixture model by examining the local maxima of the
     # density
-    dens = density(z_scores)
+    dens = stats::density(z_scores)
     maxima = which(diff(sign(diff(dens$y))) == -2) + 1
     
     # exclude maxima that are simply blips, and thus do not contribute greatly,

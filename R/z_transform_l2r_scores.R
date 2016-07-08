@@ -19,7 +19,7 @@ get_l2r_z_scores <- function(mom_data, dad_data, child_data, population) {
         population_l2r = colMeans(population, na.rm = TRUE)
     }
     pop_mean = mean(population_l2r, na.rm=TRUE)
-    pop_sd = sd(population_l2r, na.rm=TRUE)
+    pop_sd = stats::sd(population_l2r, na.rm=TRUE)
     
     # get the z-scores of mean log2 ratios for the population, and for the
     # trio members

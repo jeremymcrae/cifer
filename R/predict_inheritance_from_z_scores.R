@@ -43,11 +43,11 @@ predict_inheritance <- function(population, family=NULL) {
     # estimate the probability of getting the parental Z scores, given the
     # population null distribution
     paternal_z = (family$dad - null_mean)/null_sd
-    dad_value = 2 * pnorm(-abs(paternal_z))
+    dad_value = 2 * stats::pnorm(-abs(paternal_z))
     maternal_z = (family$mom - null_mean)/null_sd
-    mom_value = 2 * pnorm(-abs(maternal_z))
+    mom_value = 2 * stats::pnorm(-abs(maternal_z))
     child_z = (family$child - null_mean)/null_sd
-    child_value = 2 * pnorm(-abs(child_z))
+    child_value = 2 * stats::pnorm(-abs(child_z))
     
     inheritance = classify_from_trio_p_values(mom_value, dad_value, child_value)
     family = list("mom_value"=mom_value, "dad_value"=dad_value,
