@@ -1,6 +1,6 @@
 Package: cifer
 Title: CNV Inheritance from Exome Read-Depths
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: person(given="Jeremy", family="McRae",
     email="jeremy.mcrae@sanger.ac.uk", role=c("aut", "cre"))
 Description: Classifies the inheritance of CNV calls using exome read-depth
@@ -17,3 +17,4 @@ Imports:
     mixtools (>= 1.0.2)
 Suggests:
     testthat
+RoxygenNote: 5.0.1
