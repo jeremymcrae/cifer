@@ -16,4 +16,10 @@ identify the plot)}
 \description{
 plot the density of Z-scores from the population and trio
 }
+\examples{
+z_scores = list('population'=rnorm(1000), 'mom'=4, 'dad'=0, 'proband'=4)
+cnv = list('person_id'='sample_1', 'chrom'='1', 'start'=1000, 'end'=2000,
+    'inheritance'='maternal_inh')
+plot_cnv(z_scores, cnv)
+}
 
